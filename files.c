@@ -18,7 +18,7 @@ void m_free(char **m, size_t n)
 void res_print(char **m, size_t n)
 {
 	int i;
-	for (i=0; i<n; i++)
+	for (i=n; i>0; i--)
 	{
 		printf("%s\n", m[i]);
 	}
