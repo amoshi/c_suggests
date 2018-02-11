@@ -35,7 +35,6 @@ size_t string_to_int( char *str, size_t l, seq *st )
 		cur += strcspn(cur, "0123456789");
 		if ( cur == str+l )
 			break;
-		//printf("%"PRIu64"/%zu: %p/%p/%p: %s\n", i, l, cur, curswp, str+l, cur);
 		cur += strcspn(cur, " \t\n\0") + 1;
 	}
 	cur = str;
@@ -43,7 +42,6 @@ size_t string_to_int( char *str, size_t l, seq *st )
 	for ( j=0; j<i; j++ )
 	{
 		cur += strcspn(cur, "0123456789");
-		//printf("%lld\n", atoll(cur));
 		seq[j]=atoll(cur);
 		cur += strcspn(cur, " \t\n\0") + 1;
 	}
@@ -57,12 +55,7 @@ void input (seq **st)
 	char *arg = malloc( ARG_INPUT_MAXSIZE );
 	st[0] = malloc(sizeof(seq));
 	
-//	int res = scanf("%s", arg);
-//	printf("%d, %s\n", res, arg);
-//	res = scanf("%s", arg);
-//	printf("%d, %s\n", res, arg);
 	fgets(arg, ARG_INPUT_MAXSIZE, stdin);
-	//printf("%s\n", arg);
 	string_to_int( arg, strlen(arg), st[0] );
 }
 
@@ -83,10 +76,8 @@ void erase_sseq ( sseq *sst )
 void output(seq *st)
 {
 	int64_t i;
-	//printf("output: %zu\n", st->m);
 	for ( i=0; i<st->m; i++ )
 	{
-		//printf("output element %"PRId64"\n", i);
 		printf("%5"PRId64" ", st->s[i]);
 	}
 	puts("");
@@ -97,7 +88,6 @@ void soutput(sseq *sst, seq *st)
 	int64_t i;
 	for ( i=0; i < sst->n; i++ )
 	{
-		//printf("output element %"PRId64"\n", i);
 		printf("%6"PRId64": ", st->s[i]);
 		output(sst->seq+i);
 	}
@@ -117,7 +107,6 @@ int64_t max(seq *st)
 
 uintstruct* gen_fib(int64_t max)
 {
-	//printf("max_fib: %"PRId64"\n", max);
 	uint64_t i, j;
 	int64_t tmp0 = 0, tmp1 = 1, tmp2 = 0, tmpcur = 0;
 	for ( i=2; tmp1<max; tmpcur=tmp0 + tmp1, tmp0=tmp1, tmp1=tmpcur, i++ /*, printf("tmp=%"PRId64"/%"PRId64"\n", tmpcur, max)*/ );
@@ -127,7 +116,6 @@ uintstruct* gen_fib(int64_t max)
 	for ( j=2; j<i; j++ )
 	{
 		fib[j]=fib[j-1]+fib[j-2];
-		//printf("%"PRIu64":::%"PRId64"\n", j, fib[j]);
 	}
 	uintstruct *fs = malloc ( sizeof(uintstruct) );
 	fs->fib = fib;
@@ -139,7 +127,6 @@ sseq* make_matrix (seq *st, uintstruct *fs)
 {
 	int64_t i, j;
 	sseq *sst;
-	//printf("m=%zu, fib_n=%zu\n", st->m, fs->n);
 	sst = malloc( sizeof(sseq) );
 	sst->n = st->m;
 	sst->seq = malloc ( sizeof(seq) * st->m );
@@ -147,13 +134,11 @@ sseq* make_matrix (seq *st, uintstruct *fs)
 	{
 		int64_t count = st->s[j];
 		uint64_t k;
-		//printf("%"PRId64"\n",  st->s[j]);
 		for ( i=fs->n-1, k=0; count>=0 && i>0; i-- )
 		{
 			if ( count - fs->fib[i] >= 0 )
 			{
 				count -= fs->fib[i];
-				//printf("%"PRId64": %"PRId64", count=%"PRId64"\n", st->s[j], fs->fib[i], count);
 				k++;
 			}
 		}
