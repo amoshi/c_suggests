@@ -73,6 +73,12 @@ void erase_sseq ( sseq *sst )
 	free(sst);
 }
 
+
+void erase_fib ( uintstruct *fs )
+{
+	free(fs->fib);
+	free(fs);
+}
 void output(seq *st)
 {
 	int64_t i;
@@ -164,6 +170,7 @@ void action(seq *st, sseq **sst)
 	int64_t mmax = max(st);
 	uintstruct *fs = gen_fib(mmax);
 	sst[0] = make_matrix(st, fs);
+	erase_fib (fs);
 }
 
 int main()
