@@ -23,13 +23,15 @@ typedef struct uintstruct
 	size_t n;
 } uintstruct;
 
-size_t string_to_int( char *str, size_t l, seq *st )
+size_t string_to_int( char *str, size_t l, seq *st, int m )
 {
+	if ( m<0 )
+		exit(1);
 	uint64_t i, j, k;
 	char *cur = str;
 	char *curswp = cur;
 	int64_t *seq;
-	for ( i=0; cur < str+l; i++ )
+	for ( i=0; cur < str+l && i<m; i++ )
 	{
 		curswp = cur;
 		cur += strcspn(cur, "0123456789");
@@ -54,9 +56,12 @@ void input (seq **st)
 {
 	char *arg = malloc( ARG_INPUT_MAXSIZE );
 	st[0] = malloc(sizeof(seq));
-	
+
+	printf("enter M:\n");
+	int m;
+	scanf("%d\n", &m);
 	fgets(arg, ARG_INPUT_MAXSIZE, stdin);
-	string_to_int( arg, strlen(arg), st[0] );
+	string_to_int( arg, strlen(arg), st[0], m );
 }
 
 void erase_seq (seq *st)
