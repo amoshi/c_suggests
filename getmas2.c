@@ -140,15 +140,19 @@ void work (struct Matr *M, struct Line *L)
 				}
 			}
 		}
-		buf = M->p[i].a[0];
-		L->a[i] = 1;
-		for (j = 1; j < M->p[i].n; j++)
+		L->a[i] = 0;
+		for (j = 0; j < M->p[i].n; j++)
 		{
-			if (M->p[i].a[j]!=buf)
+			int elements = 0;
+			for (l=j+1; l < M->p[i].n; l++)
 			{
-				buf = M->p[i].a[j];
-				L->a[i]++;
+				if (M->p[i].a[j]==M->p[i].a[l])
+				{
+					elements++;
+				}
 			}
+			if ( elements > L->a[i] )
+				L->a[i] = elements;
 		}
 	}
 }
