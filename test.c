@@ -2,20 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int getInt (int *n)
-{
-	int k;
-	do
-	{
-		k = scanf("%d",n);
-		if (k==0)
-		{
-			scanf ("%*c");
-		}
-	}
-	while (k==0);
-	return k==1?0:-1;
-}
 
 // структура строк маттрицы
 typedef struct row_t {
