@@ -77,8 +77,11 @@ mstring_t* action (mstring_t *mstr_i)
 			if ( ( !strncmp(mstr_i->s[i]+j, " ", 1) ) || ( !strncmp(mstr_i->s[i]+j, "\t", 1) ) )
 			{
 				puts("poimal probel");
-				newmstr->s[i][k]=' ';
-				k++;
+				if ( ( newmstr->s[i][k-1] != ' ' ) || ( k != 0 ) )
+				{
+					newmstr->s[i][k]=' ';
+					k++;
+				}
 			}
 			if ( ( !strncmp(mstr_i->s[i]+j, "1", 1) && !strncmp(mstr_i->s[i]+j+1, "0", 1) ) || ( !strncmp(mstr_i->s[i]+j, "0", 1) && !strncmp(mstr_i->s[i]+j+1, "1", 1) ) )
 			{
@@ -91,6 +94,8 @@ mstring_t* action (mstring_t *mstr_i)
 				k+=2;
 				j++;
 			}
+			if ( newmstr->s[i][strlen(newmstr->s[i])] == ' ' )
+				newmstr->s[i][strlen(newmstr->s[i])]='\0';
 		}
 		newmstr->s[i][k] = '\0';
 	}

@@ -17,16 +17,17 @@ row_t *get_matrix(int m) {
         int fl=0;
         while(fl==0){
             printf("Enter m%d: ", i + 1);
-	      int k;
-	      do
-	      {
-	      	k = scanf("%d",&matrix[i].length);
-	      	if (k==0)
-	      	{
-	      		scanf ("%*c");
-	      	}
-	      }
-	      while (k==0);
+	          int k;
+	          do
+	          {
+	          	k = scanf("%d",&matrix[i].length);
+	          	if (k==0)
+	          	{
+	          		scanf ("%*c");
+	          	}
+	          }
+	          while (k==0);
+
                   if((matrix[i].length > 0)) fl=1;
                   else printf("Error input! Enter a positive number\n");
               }
@@ -103,6 +104,16 @@ int main() {
     while(fl==0){
         printf("Enter m: ");                          // вывод сообщения для ввода размеров матрицы
         scanf("%d", &m);
+	          int k;
+	          do
+	          {
+	          	k = scanf("%d",&m);
+	          	if (k==0)
+	          	{
+	          		scanf ("%*c");
+	          	}
+	          }
+	          while (k==0);
         if(m > 0) fl=1;
         else printf("Error input! Enter a positive number\n");
     }
