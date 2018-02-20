@@ -3,33 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 #define ARG_INPUT_MAXSIZE 1024000
+#define ARG_ARRAY_MAXSIZE 100000
 
 typedef struct mstring_t
 {
 	char **s;
 	size_t n;
 } mstring_t;
-
-//char *normalizer(char *s, size_t l)
-//{
-//	printf("str is '%s' (%zu) \n", s, l);
-//	uint64_t i, j;
-//	char *ret = malloc (l);
-//	for ( i=strspn(s," \t"), j=0; i<l; i++ )
-//	{
-//		if ( strspn(s+i," \t") > 1 )
-//			continue;
-//		ret[j]=s[i];
-//
-//		j++;
-//	}
-//	if ( strspn(s+j," \t") > 0 )
-//		ret[j-1]='\0';
-//	else    ret[j]='\0';
-//
-//	printf("ret is '%s' (%zu)\n", ret, strlen(ret));
-//	return ret;
-//}
 
 void output (mstring_t *mstr_i)
 {
@@ -45,12 +25,13 @@ size_t input (char ***istr)
 {
 	char *arg = malloc( ARG_INPUT_MAXSIZE );
 
-	istr[0] = malloc( (sizeof(char*))*10000 );
+	istr[0] = malloc( (sizeof(char*))*ARG_ARRAY_MAXSIZE );
 	int64_t i;
 
+	printf("enter string:\n\t");
 	for ( i=0; fgets(arg, ARG_INPUT_MAXSIZE, stdin); i++ )
 	{
-		puts("============");
+		printf("\t");
 		//printf("arg=%s\n", arg);
 		size_t arg_len = strlen(arg);
 		//istr[0] = realloc( (istr[0]), (sizeof(char*))*i );
@@ -101,9 +82,9 @@ int main()
 	mstring_t *mstr_o;
 	mstr_i->n = input(&istr);
 	mstr_i->s = istr;
-	puts("input vars:");
+	printf("\n\ninput vars:\n");
 	output(mstr_i);
 	mstr_o = action(mstr_i);
-	puts("output vars:");
+	printf("\n\noutput vars:\n");
 	output(mstr_o);
 }
