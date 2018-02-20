@@ -21,6 +21,16 @@ void output (mstring_t *mstr_i)
 	}
 }
 
+void erase (mstring_t *mstr_i)
+{
+	size_t n = mstr_i->n;
+	int64_t i;
+	for ( i=0; i<n; i++ )
+	{
+		free(mstr_i->s[i]);
+	}
+}
+
 size_t input (char ***istr)
 {
 	char *arg = malloc( ARG_INPUT_MAXSIZE );
@@ -57,7 +67,19 @@ mstring_t* action (mstring_t *mstr_i)
 		newmstr->s[i] = malloc(sn+1);
 		for ( j=0, k=0; j<sn+1; j++ )
 		{
-	//		if ( ( mstr_i->s[i][j] == '1' && mstr_i->s[i][j+1] == '0' ) || ( mstr_i->s[i][j] == '0' && mstr_i->s[i][j+1] == '1' ) )
+			int64_t a = strspn(mstr_i->s[i]+j," \t");
+			printf("a=%"PRId64"\n", a);
+			if ( a>0 )
+			{
+				j += a-1;
+				puts("1 probel");
+			}
+			if ( ( !strncmp(mstr_i->s[i]+j, " ", 1) ) || ( !strncmp(mstr_i->s[i]+j, "\t", 1) ) )
+			{
+				puts("poimal probel");
+				newmstr->s[i][k]=' ';
+				k++;
+			}
 			if ( ( !strncmp(mstr_i->s[i]+j, "1", 1) && !strncmp(mstr_i->s[i]+j+1, "0", 1) ) || ( !strncmp(mstr_i->s[i]+j, "0", 1) && !strncmp(mstr_i->s[i]+j+1, "1", 1) ) )
 			{
 				//printf("%% %c\n", mstr_i->s[i][j]);
@@ -87,4 +109,6 @@ int main()
 	mstr_o = action(mstr_i);
 	printf("\n\noutput vars:\n");
 	output(mstr_o);
+	erase(mstr_i);
+	erase(mstr_o);
 }
