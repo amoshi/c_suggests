@@ -31,11 +31,7 @@ void output (llstr_t *llstr)
 	{
 		lstr_t *elem = &llstr->ls[i];
 		printf("\t");
-		for ( j=0; elem->next; j++, elem=elem->next )
-		{
-			//printf("[%"PRIu64"][%"PRIu64"] : '%c'\n", i, j, elem->c);
-			printf("%c", elem->c);
-		}
+		for ( j=0; elem->next; printf("%c", elem->c), j++, elem=elem->next );
 		puts("");
 	}
 }
@@ -77,6 +73,30 @@ llstr_t* input ()
 	return llstr;
 }
 
+void case_action (lstr_t *elem, llstr_t *nnstr, int64_t i)
+{
+	int64_t j;
+	int isspace = 2;
+	for ( j=0 ; elem->next; elem=elem->next, j++ )
+	{
+		if ( ( ( elem->c == ' ' ) || ( elem->c == '\t' ) ) && isspace == 0 )
+		{
+			isspace = 1;
+		}
+		if ( ( elem->c == '1' && elem->next->c == '0' ) || ( elem->c == '0' && elem->next->c == '1' ) )
+		{
+			if ( isspace == 1 )
+			{
+				lpush(&nnstr->ls[i], " ", 1);
+			}
+			isspace = 0;
+			lpush(&nnstr->ls[i], &elem->c, 1);
+			lpush(&nnstr->ls[i], &elem->next->c, 1);
+			elem = elem->next;
+		}
+	}
+}
+
 llstr_t* action (llstr_t *llstr)
 {
 	size_t n = llstr->n;
@@ -89,36 +109,8 @@ llstr_t* action (llstr_t *llstr)
 		lstr_t *elem = &llstr->ls[i];
 		nnstr->ls[i].next=NULL;
 		nnstr->ls[i].prev=NULL;
-		int isspace = 2;
-		for ( j=0 ; elem->next; elem=elem->next, j++ )
-		{
-			if ( !(elem->next) )
-				break;
-			if ( ( elem->c == ' ' ) || ( elem->c == '\t' ) )
-			{
-				if ( isspace == 0 )
-				{
-					if ( elem->next->next != NULL )
-					{
-						isspace = 1;
-					}
-				}
-			}
-			if ( ( elem->c == '1' && elem->next->c == '0' ) || ( elem->c == '0' && elem->next->c == '1' ) )
-			{
-				if ( isspace == 1 )
-				{
-						lpush(&nnstr->ls[i], " ", 1);
-				}
-				isspace = 0;
-				lpush(&nnstr->ls[i], &elem->c, 1);
-				lpush(&nnstr->ls[i], &elem->next->c, 1);
-				elem = elem->next;
-			}
-		}
+		case_action(elem, nnstr, i);
 	}
-
-
 
 	return nnstr;
 }
