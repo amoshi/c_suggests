@@ -18,8 +18,30 @@ typedef struct llstr_t
 	size_t n;
 } llstr_t;
 
+void ldel(lstr_t *lstr)
+{
+	if ( lstr->next )
+		//lstr->next=lstr->next->next;
+		lstr->next->prev = lstr->prev;
+	if ( lstr->prev )
+		//lstr->prev=lstr->prev->prev;
+		lstr->prev->next = lstr->next;
+	if ( lstr )
+		free(lstr);
+}
+
 void erase (llstr_t *llstr)
 {
+	size_t n = llstr->n;
+	uint64_t i;
+	lstr_t *ls, *next;
+	ls = llstr->ls;
+	for ( i=0; i<n; i++ )
+	{
+		next = ls->next;
+		ldel(ls);
+		ls = next;
+	}
 	free(llstr);
 }
 
