@@ -42,14 +42,10 @@ size_t input (char ***istr)
 	for ( i=0; fgets(arg, ARG_INPUT_MAXSIZE, stdin); i++ )
 	{
 		printf("\t");
-		//printf("arg=%s\n", arg);
 		size_t arg_len = strlen(arg);
-		//istr[0] = realloc( (istr[0]), (sizeof(char*))*i );
-		//printf("allocating %zu\n", arg_len);
 		malloc(arg_len);
 		istr[0][i] = malloc(arg_len);
 		strlcpy(istr[0][i],arg,arg_len);
-		//printf("\targ=%s\tistr=%s\n", arg, istr[0][i]);
 	}
 	return i;
 }
@@ -68,16 +64,13 @@ mstring_t* action (mstring_t *mstr_i)
 		for ( j=0, k=0; j<sn+1; j++ )
 		{
 			int64_t a = strspn(mstr_i->s[i]+j," \t");
-			printf("a=%"PRId64"\n", a);
 			if ( a>0 )
 			{
 				j += a-1;
-				puts("1 probel");
 			}
 			if ( ( !strncmp(mstr_i->s[i]+j, " ", 1) ) || ( !strncmp(mstr_i->s[i]+j, "\t", 1) ) )
 			{
-				puts("poimal probel");
-				if ( ( newmstr->s[i][k-1] != ' ' ) || ( k != 0 ) )
+				if ( ( newmstr->s[i][k-1] != ' ' ) && ( k != 0 ) )
 				{
 					newmstr->s[i][k]=' ';
 					k++;
@@ -85,19 +78,15 @@ mstring_t* action (mstring_t *mstr_i)
 			}
 			if ( ( !strncmp(mstr_i->s[i]+j, "1", 1) && !strncmp(mstr_i->s[i]+j+1, "0", 1) ) || ( !strncmp(mstr_i->s[i]+j, "0", 1) && !strncmp(mstr_i->s[i]+j+1, "1", 1) ) )
 			{
-				//printf("%% %c\n", mstr_i->s[i][j]);
-				//printf("%% %c\n", mstr_i->s[i][j+1]);
 				newmstr->s[i][k] = mstr_i->s[i][j];
 				newmstr->s[i][k+1] = mstr_i->s[i][j+1];
-				//printf("newmstr->s[%"PRIu64"][%"PRIu64"]=%c\n", i, k, newmstr->s[i][k]);
-				//printf("newmstr->s[%"PRIu64"][%"PRIu64"]=%c\n", i, k+1, newmstr->s[i][k+1]);
 				k+=2;
 				j++;
 			}
-			if ( newmstr->s[i][strlen(newmstr->s[i])] == ' ' )
-				newmstr->s[i][strlen(newmstr->s[i])]='\0';
 		}
 		newmstr->s[i][k] = '\0';
+		if ( newmstr->s[i][k-1] == ' ' )
+			newmstr->s[i][k-1]='\0';
 	}
 	return newmstr;
 }

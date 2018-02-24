@@ -103,7 +103,6 @@ int main() {
     int fl=0;                                     // проверка на ввод
     while(fl==0){
         printf("Enter m: ");                          // вывод сообщения для ввода размеров матрицы
-        scanf("%d", &m);
 	          int k;
 	          do
 	          {

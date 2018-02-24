@@ -30,13 +30,13 @@ void output (llstr_t *llstr)
 	for ( i=0; i<n; i++ )
 	{
 		lstr_t *elem = &llstr->ls[i];
-		printf("\t'");
+		printf("\t");
 		for ( j=0; elem->next; j++, elem=elem->next )
 		{
 			//printf("[%"PRIu64"][%"PRIu64"] : '%c'\n", i, j, elem->c);
-			printf("'%c'", elem->c);
+			printf("%c", elem->c);
 		}
-		puts("'");
+		puts("");
 	}
 }
 
@@ -77,16 +77,6 @@ llstr_t* input ()
 	return llstr;
 }
 
-void normalize (llstr_t *llstr)
-{
-	size_t n = llstr->n;
-	int64_t i, j;
-	for ( i=0; i<n; i++ )
-	{
-		
-	}
-}
-
 llstr_t* action (llstr_t *llstr)
 {
 	size_t n = llstr->n;
@@ -99,10 +89,9 @@ llstr_t* action (llstr_t *llstr)
 		lstr_t *elem = &llstr->ls[i];
 		nnstr->ls[i].next=NULL;
 		nnstr->ls[i].prev=NULL;
-		int isspace = 1;
+		int isspace = 2;
 		for ( j=0 ; elem->next; elem=elem->next, j++ )
 		{
-			printf("1elem->next is %p\n", elem->next->next);
 			if ( !(elem->next) )
 				break;
 			if ( ( elem->c == ' ' ) || ( elem->c == '\t' ) )
@@ -111,22 +100,20 @@ llstr_t* action (llstr_t *llstr)
 				{
 					if ( elem->next->next != NULL )
 					{
-						printf("j=%lld\n", j);
 						isspace = 1;
-						lpush(&nnstr->ls[i], " ", 1);
 					}
 				}
 			}
 			if ( ( elem->c == '1' && elem->next->c == '0' ) || ( elem->c == '0' && elem->next->c == '1' ) )
 			{
+				if ( isspace == 1 )
+				{
+						lpush(&nnstr->ls[i], " ", 1);
+				}
+				isspace = 0;
 				lpush(&nnstr->ls[i], &elem->c, 1);
 				lpush(&nnstr->ls[i], &elem->next->c, 1);
 				elem = elem->next;
-				isspace = 0;
-				printf("2elem->next is %p\n", elem->next);
-				if ( elem->next == NULL )
-					break;
-					//isspace = 1;
 			}
 		}
 	}
@@ -142,7 +129,6 @@ int main()
 	printf("\n\ninput vars:\n");
 	output(llstr);
 	llstr_t *nnstr = action(llstr);
-	normalize(nnstr);
 	printf("\n\noutput vars:\n");
 	output(nnstr);
 	erase(nnstr);
