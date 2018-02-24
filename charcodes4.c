@@ -26,8 +26,7 @@ void ldel(lstr_t *lstr)
 	if ( lstr->prev )
 		//lstr->prev=lstr->prev->prev;
 		lstr->prev->next = lstr->next;
-	if ( lstr )
-		free(lstr);
+	free(lstr);
 }
 
 void erase (llstr_t *llstr)
