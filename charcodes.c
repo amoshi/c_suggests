@@ -50,6 +50,38 @@ size_t input (char ***istr)
 	return i;
 }
 
+void case_action (char *s, char *sz, size_t sn) 
+{
+	int64_t k, j;
+	for ( j=0, k=0; j<sn+1; j++ )
+	{
+		int64_t a = strspn(s+j," \t");
+		if ( a>0 )
+		{
+			j += a-1;
+		}
+		if ( ( !strncmp(s+j, " ", 1) ) || ( !strncmp(s+j, "\t", 1) ) )
+		{
+			if ( ( sz[k-1] != ' ' ) && ( k != 0 ) )
+			{
+				sz[k]=' ';
+				k++;
+			}
+		}
+		if ( ( !strncmp(s+j, "1", 1) && !strncmp(s+j+1, "0", 1) ) || ( !strncmp(s+j, "0", 1) && !strncmp(s+j+1, "1", 1) ) )
+		{
+			sz[k] = s[j];
+			sz[k+1] = s[j+1];
+			k+=2;
+			j++;
+		}
+	}
+	sz[k] = '\0';
+	if ( sz[k-1] == ' ' )
+		sz[k-1]='\0';
+	
+}
+
 mstring_t* action (mstring_t *mstr_i)
 {
 	size_t n = mstr_i->n;
@@ -61,32 +93,7 @@ mstring_t* action (mstring_t *mstr_i)
 	{
 		size_t sn = strlen(mstr_i->s[i]);
 		newmstr->s[i] = malloc(sn+1);
-		for ( j=0, k=0; j<sn+1; j++ )
-		{
-			int64_t a = strspn(mstr_i->s[i]+j," \t");
-			if ( a>0 )
-			{
-				j += a-1;
-			}
-			if ( ( !strncmp(mstr_i->s[i]+j, " ", 1) ) || ( !strncmp(mstr_i->s[i]+j, "\t", 1) ) )
-			{
-				if ( ( newmstr->s[i][k-1] != ' ' ) && ( k != 0 ) )
-				{
-					newmstr->s[i][k]=' ';
-					k++;
-				}
-			}
-			if ( ( !strncmp(mstr_i->s[i]+j, "1", 1) && !strncmp(mstr_i->s[i]+j+1, "0", 1) ) || ( !strncmp(mstr_i->s[i]+j, "0", 1) && !strncmp(mstr_i->s[i]+j+1, "1", 1) ) )
-			{
-				newmstr->s[i][k] = mstr_i->s[i][j];
-				newmstr->s[i][k+1] = mstr_i->s[i][j+1];
-				k+=2;
-				j++;
-			}
-		}
-		newmstr->s[i][k] = '\0';
-		if ( newmstr->s[i][k-1] == ' ' )
-			newmstr->s[i][k-1]='\0';
+		case_action (mstr_i->s[i], newmstr->s[i], sn);
 	}
 	return newmstr;
 }
