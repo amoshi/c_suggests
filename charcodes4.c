@@ -79,17 +79,35 @@ llstr_t* input ()
 	llstr_t *llstr = malloc(sizeof(llstr));
 	llstr->ls = malloc(sizeof(lstr_t)*ARG_ARRAY_MAXSIZE);
 
-	int64_t i;
+	int64_t i = 0;
+	int n;
 
 	printf("enter string:\n\t");
-	for ( i=0; fgets(arg, ARG_INPUT_MAXSIZE, stdin) && i<ARG_ARRAY_MAXSIZE; i++ )
-	{
-		printf("\t");
+	//for ( i=0; fgets(arg, ARG_INPUT_MAXSIZE, stdin) && i<ARG_ARRAY_MAXSIZE; i++ )
+	//{
+	//	printf("\t");
+	//	size_t arg_len = strlen(arg);
+	//	llstr->ls[i].next = NULL;
+	//	llstr->ls[i].prev = NULL;
+	//	lpush(&llstr->ls[i], arg, arg_len-1);
+	//}
+        do {
+                n = scanf("%1000[^\n]", arg);
+                if ( n < 0 )
+                {
+                        continue;
+                }
+                else
+                        scanf("%*c");
 		size_t arg_len = strlen(arg);
 		llstr->ls[i].next = NULL;
 		llstr->ls[i].prev = NULL;
 		lpush(&llstr->ls[i], arg, arg_len-1);
-	}
+                i++;
+        } while ( n > 0 );
+
+
+
 	llstr->n = i;
 	return llstr;
 }
