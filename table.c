@@ -13,13 +13,6 @@ typedef struct Node
 	struct Node *right;
 } Node;
 
-typedef struct Table
-{
-	struct Node *left;
-	struct Node *right;
-	size_t n;
-} Table;
-
 const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
@@ -159,7 +152,7 @@ Node *insert(Node **proot, int64_t k, char *in)
 }
 
 
-int64_t d_add(Table *a)
+int64_t d_add(Node *a)
 {
 	char field[MAX_LEN];
 	field[0]='a';
@@ -177,7 +170,7 @@ int64_t d_add(Table *a)
 	insert(&(a->left), key, field);
 	return 1;
 }
-int64_t d_find(Table *a)
+int64_t d_find(Node *a)
 {
 	Node *res = NULL;
 	char field[MAX_LEN];
@@ -200,7 +193,7 @@ int64_t d_find(Table *a)
 	
 	return 1;
 }
-int64_t d_delete(Table *a)
+int64_t d_delete(Node *a)
 {
 	Node *temp = NULL;
 	char field[MAX_LEN];
@@ -248,7 +241,7 @@ int show ( Node *ptr )
 	}
 	return 1;
 }
-int64_t d_show(Table *a)
+int64_t d_show(Node *a)
 {
 	int64_t i;
 	if ( a->left )
@@ -276,7 +269,7 @@ void freetab(Node *proot)
 	* поддерево */
 }
 
-int64_t delTable(Table *a)
+int64_t delTable(Node *a)
 {
 	if ( a->left )
 		freetab(a->left);
@@ -285,7 +278,7 @@ int64_t delTable(Table *a)
 	return 0;
 }
 
-int64_t (*fptr[])(Table *) = {NULL, d_add, d_find, d_delete, d_show};
+int64_t (*fptr[])(Node *) = {NULL, d_add, d_find, d_delete, d_show};
 
 int dialog ( const char *msgs[], int argc)
 {
@@ -312,7 +305,9 @@ int dialog ( const char *msgs[], int argc)
 
 int main()
 {
-	Table a;
+	Node a;
+	a.right=0;
+	a.left=0;
 	int rc;
 	while ( (rc = dialog(msgs, NMsgs)) )
 		if ( !fptr[rc](&a) )
