@@ -20,30 +20,26 @@ const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 char *getInfo(char *ffile, Node *ptr)
 {
+	printf("ptr->len='%zu' ptr->key=%"PRId64"\n", ptr->len, ptr->key);
 	if ( ptr->len < 1 )
 		return NULL;
 	printf("ptr=%p\n", ptr);
 	printf("ptr->len=%zu\n", ptr->len);
 	printf("ptr->offset=%"PRId64"\n", ptr->offset);
 	FILE *fd = fopen( ffile, "r+b" );
-	puts("1");
 	if ( !fd )
 		return NULL;
-	puts("2");
 	char *str = malloc ( ptr->len );
-	puts("3");
 	fseek(fd, ptr->offset, SEEK_SET);
-	puts("4");
 	fread(str, 1, ptr->len, fd);
-	puts("5");
 	fclose(fd);
-	puts("6");
 	return str;
 }
 
 Node *letoffset (Node *proot, int64_t key, int64_t changeoffset)
 {
 	Node *ptr = proot;
+	printf("proot=%p\n", proot);
 	if (!proot)
 	{
 		return NULL;
@@ -62,6 +58,7 @@ Node *letoffset (Node *proot, int64_t key, int64_t changeoffset)
 
 Node *search (Node *proot, int64_t key)
 {
+	//printf("testing %p with key %"PRId64" (finding %"PRId64")\n", proot, proot->key, key);
 	Node *ptr = proot;
 	if (!proot)
 	{
@@ -77,25 +74,6 @@ Node *search (Node *proot, int64_t key)
 	/* рекурсивный вызов функции включения нового элемента в выбранное
 	* поддерево */
 	return search(ptr, key);
-
-}
-
-Node *parentsearch (Node *proot, int64_t key)
-{
-	Node *ptr = proot;
-	if (!proot)
-	{
-		return NULL;
-	}
-	printf("2enter proot key %lld\n", proot->key);
-
-	/* выбор нужного поддерева */
-	if( (proot->left->key == key) || (proot->right->key == key) )
-		return proot;
-	ptr = (key < proot->key) ?  proot->left : proot->right;
-	/* рекурсивный вызов функции включения нового элемента в выбранное
-	* поддерево */
-	return parentsearch(ptr, key);
 
 }
 
@@ -160,7 +138,6 @@ Node* erase(Node *node, int64_t key, char *ffile, Node *table)
 			}
 		}
  
-		////free(node->info);
 		file_offset_truncate(ffile, node->offset, node->len);
 		letoffset(table, node->key, node->offset+node->len);
 		free(node);
@@ -185,7 +162,7 @@ Node *instree (Node **node, Node *newnode)
 
 	/* выбор нужного поддерева */
 	if((*node)->key == newnode->key)
-	{	puts("dupling key"); return NULL;}	/* элемент с таким ключом в таблице – дереве есть */
+		return NULL;	/* элемент с таким ключом в таблице – дереве есть */
 	Node **ptr;
 	ptr = (newnode->key < (*node)->key) ?
 	&(*node)->left : &(*node)->right;
@@ -252,26 +229,6 @@ Node *stupinsert(Node **node, Node *newnode)
 	return ptr;
 }
 
-Node *instreewo (Node **node, Node *newnode)
-{
-	Node **ptr = node;
-	if(!*node){
-		/* дерево пусто */
-		puts("tree is empty");
-		*node = newnode;
-		return newnode;
-	}
-
-	/* выбор нужного поддерева */
-	if((*node)->key == newnode->key)
-		return NULL;	/* элемент с таким ключом в таблице – дереве есть */
-	ptr = (newnode->key < (*node)->key) ? &(*node)->left : &(*node)->right;
-	/* рекурсивный вызов функции включения нового элемента в выбранное
-	* поддерево */
-	puts("call instreee");
-	return instreewo(ptr, newnode);
-
-}
 
 int64_t d_add(Node *a, char *ffile)
 {
@@ -304,14 +261,11 @@ int64_t d_find(Node *a, char *ffile)
 	}
 	int64_t key = atoll(field);
 	
-	if ( a->left )
-		res = search(a->left, key);
-	if ( a->right )
-		res = search(a->right, key);
+	res = search(a, key);
 	printf("\n\nResults:\n-------------\n");
 	if ( res )
 	{
-		char *str = getInfo(ffile, a);
+		char *str = getInfo(ffile, res);
 		if ( !str )
 			return -1;
 		printf("key: %"PRId64", info: '%s'\n", res->key, str);
@@ -340,7 +294,7 @@ int64_t d_delete(Node *a, char *ffile)
 	}
 	if ( a->right )
 	{
-		a->right = erase(a->right, key, ffile, a->left);
+		a->right = erase(a->right, key, ffile, a->right);
 		temp = a->right;
 	}
 	printf("\n\nResults:\n-------------\n");
@@ -403,12 +357,7 @@ int show ( Node *ptr, char *ffile )
 int64_t d_show(Node *a, char *ffile)
 {
 	int64_t i;
-	puts("start");
-	//if ( a->left ) { puts("1");
-		show(a, ffile);
-//	if ( a->right ) { puts("2");
-//		show(a->right, ffile); }
-	puts("stop");
+	show(a, ffile);
 	return 1;
 }
 
@@ -502,11 +451,6 @@ Node* startup(char *ftab)
 		printf("offset=%"PRId64"\n", node->offset);
 		printf("trying loading key=%"PRId64", len=%zu, offset=%"PRId64"\n", node->key, node->len, node->offset);
 		stupinsert(&root, node);
-		//show(root,"1");
-		//if(!(ptr = instreewo(&root, node)))
-		//{
-		//	printf("this key %"PRId64" already in used", node->key);
-		//}
 	}
 	printf("returning struct with addr %p", root);
 	return root;
@@ -523,43 +467,12 @@ int64_t shutdown(char *ftab, Node *node)
 		return -1;
 	}
 	fwrite(&size, sizeof(int64_t),1,fd);
-	if ( node->left )
-	{
-		size += writeTable( node->left, fd );
-	}
-	if ( node->right )
-	{
-		size += writeTable( node->right, fd );
-	}
+	size += writeTable( node, fd );
 	fseek(fd, 0, SEEK_SET);
 	fwrite(&size, sizeof(int64_t),1,fd);
 	printf("closing file %s\n", ftab);
 	fclose(fd);
 	return size;
-
-
-	//for ( ptr = node, size = 0; ptr; size++ )
-	//{
-	//	puts("1");
-	//	if ( ptr )
-	//	{
-	//		printf("write key=%"PRId64", len=%zu, offset=%"PRId64" to file %s\n", ptr->key, ptr->len, ptr->offset, ftab);
-	//		fwrite(&ptr->key, sizeof(int64_t), 1, fd);
-	//		fwrite(&ptr->len, sizeof(int64_t), 1, fd);
-	//		fwrite(&ptr->offset, sizeof(int64_t), 1, fd);
-	//	}
-	//	if ( ptr->left )
-	//	{
-	//		ptr = ptr->left;
-	//		continue;
-	//	}
-	//	if ( ptr->right )
-	//	{
-	//		ptr = ptr->right;
-	//		continue;
-	//	}
-	//	break;
-	//}
 }
 
 int main()
