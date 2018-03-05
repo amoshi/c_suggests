@@ -20,12 +20,12 @@ const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 char *getInfo(char *ffile, Node *ptr)
 {
-	printf("ptr->len='%zu' ptr->key=%"PRId64"\n", ptr->len, ptr->key);
+	//printf("ptr->len='%zu' ptr->key=%"PRId64"\n", ptr->len, ptr->key);
 	if ( ptr->len < 1 )
 		return NULL;
-	printf("ptr=%p\n", ptr);
-	printf("ptr->len=%zu\n", ptr->len);
-	printf("ptr->offset=%"PRId64"\n", ptr->offset);
+	//printf("ptr=%p\n", ptr);
+	//printf("ptr->len=%zu\n", ptr->len);
+	//printf("ptr->offset=%"PRId64"\n", ptr->offset);
 	FILE *fd = fopen( ffile, "r+b" );
 	if ( !fd )
 		return NULL;
@@ -39,14 +39,13 @@ char *getInfo(char *ffile, Node *ptr)
 Node *letoffset (Node *proot, int64_t key, int64_t changeoffset)
 {
 	Node *ptr = proot;
-	printf("proot=%p\n", proot);
 	if (!proot)
 	{
 		return NULL;
 	}
-	printf("ENTR proot key %lld\n", proot->key);
+	//printf("ENTR proot key %lld\n", proot->key);
 
-	if(proot->key > key) { printf("ENTR: change offset from %"PRId64" to %"PRId64" ( changeoffset -%"PRId64")\n", proot->offset, proot->offset-changeoffset, changeoffset );
+	if(proot->key > key) { //printf("ENTR: change offset from %"PRId64" to %"PRId64" ( changeoffset -%"PRId64")\n", proot->offset, proot->offset-changeoffset, changeoffset );
 		proot->offset -= changeoffset; }
 
 	if ( proot->left )
@@ -62,17 +61,11 @@ Node *search (Node *proot, int64_t key)
 	Node *ptr = proot;
 	if (!proot)
 	{
-		/* дерево пусто */
 		return NULL;
 	}
-	printf("1enter proot key %lld\n", proot->key);
-
-	/* выбор нужного поддерева */
 	if(proot->key == key)
-		return proot;	/* элемент с таким ключом в таблице – дереве есть */
+		return proot;
 	ptr = (key < proot->key) ?  proot->left : proot->right;
-	/* рекурсивный вызов функции включения нового элемента в выбранное
-	* поддерево */
 	return search(ptr, key);
 
 }
@@ -87,13 +80,13 @@ int64_t file_offset_truncate(char *ffile, int64_t offset, int64_t len)
 	int64_t bytes = 0;
 	do
 	{
-		printf("set offset %"PRId64"\n", offset+len);
+		//printf("set offset %"PRId64"\n", offset+len);
 		fseek(fd, offset+len, SEEK_SET);
 		rc = fread(str, 1, MAX_LEN, fd);
-		printf("readed %"PRId64" bytes with text %s\n", rc, str);
+		//printf("readed %"PRId64" bytes with text %s\n", rc, str);
 		bytes += rc;
 		rewind(fd);
-		printf("set offset %"PRId64"\n", offset);
+		//printf("set offset %"PRId64"\n", offset);
 		fseek(fd, offset, SEEK_SET);
 		fwrite(str, 1, rc, fd);
 		offset += rc;
@@ -139,7 +132,7 @@ Node* erase(Node *node, int64_t key, char *ffile, Node *table)
 		}
  
 		file_offset_truncate(ffile, node->offset, node->len);
-		letoffset(table, node->key, node->offset+node->len);
+		letoffset(table, node->key, node->len);
 		free(node);
 		return tmp;
 	}
@@ -152,10 +145,9 @@ Node* erase(Node *node, int64_t key, char *ffile, Node *table)
 
 Node *instree (Node **node, Node *newnode)
 {
-	printf("add key='%"PRId64"', len='%zu', offset=%"PRId64"\n", newnode->key, newnode->len, newnode->offset);
+	//printf("add key='%"PRId64"', len='%zu', offset=%"PRId64"\n", newnode->key, newnode->len, newnode->offset);
 	if(!(*node)){
-		/* дерево пусто */
-		printf("add newnode with address %p: key=%"PRId64" len=%zu, offset=%"PRId64"\n", newnode, newnode->key, newnode->len, newnode->offset);
+		//printf("add newnode with address %p: key=%"PRId64" len=%zu, offset=%"PRId64"\n", newnode, newnode->key, newnode->len, newnode->offset);
 		*node = newnode;
 		return newnode;
 	}
@@ -172,11 +164,6 @@ Node *instree (Node **node, Node *newnode)
 
 }
 
-/* Функция включения нового элемента в таблицу. Результат –NULL, если
-* элемент не может быть включен в таблицу, и указатель на новый элемент
-* в противном случае
-*/
-
 int insfile(char *ffile, Node *node, char *info)
 {
 	FILE *fd = fopen(ffile, "ab");
@@ -188,7 +175,7 @@ int insfile(char *ffile, Node *node, char *info)
 	fseek(fd, 0L, SEEK_END);
 	node->offset = ftell(fd);
 	int rc = fwrite(info, 1, node->len, fd);
-	printf("put %s with size %zu to file %s, rc = %d\n", info, node->len, ffile, rc);
+	//printf("put %s with size %zu to file %s, rc = %d\n", info, node->len, ffile, rc);
 	fclose(fd);
 	return 1;
 }
@@ -206,6 +193,7 @@ Node *insert(Node **node, int64_t k, char *in, char *ffile)
 	if(!(ptr = instree(node, cur)))
 	{
 		puts("this key already in used");
+		return NULL;
 	}
 	if ( !insfile(ffile, ptr, in) )
 	{
@@ -334,7 +322,7 @@ int64_t writeTable ( Node *ptr, FILE *fd )
 
 int show ( Node *ptr, char *ffile )
 {
-	printf("showing tree with adddress %p\n", ptr);
+	//printf("showing tree with adddress %p\n", ptr);
 	if ( ptr )
 	{
 		char *str = getInfo(ffile, ptr);
