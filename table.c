@@ -21,42 +21,16 @@ Node *search (Node *proot, int64_t key)
 	Node *ptr = proot;
 	if (!proot)
 	{
-		/* дерево пусто */
 		return NULL;
 	}
 	printf("enter proot key %lld\n", proot->key);
 
-	/* выбор нужного поддерева */
 	if(proot->key == key)
-		return proot;	/* элемент с таким ключом в таблице – дереве есть */
-	ptr = (key < proot->key) ?  proot->left : proot->right;
-	/* рекурсивный вызов функции включения нового элемента в выбранное
-	* поддерево */
-	return search(ptr, key);
-
-}
-
-Node *parentsearch (Node *proot, int64_t key)
-{
-	Node *ptr = proot;
-	if (!proot)
-	{
-		return NULL;
-	}
-	printf("enter proot key %lld\n", proot->key);
-
-	/* выбор нужного поддерева */
-	if( (proot->left->key == key) || (proot->right->key == key) )
 		return proot;
 	ptr = (key < proot->key) ?  proot->left : proot->right;
-	/* рекурсивный вызов функции включения нового элемента в выбранное
-	* поддерево */
 	return search(ptr, key);
 
 }
-
-
-
 
 Node* erase(Node *node, int64_t key)
 {
@@ -107,41 +81,28 @@ Node *instree (Node **proot, Node *newnode)
 {
 	Node **ptr = proot;
 	if(!*proot){
-		/* дерево пусто */
 		*proot = newnode;
 		return newnode;
 	}
 
-	/* выбор нужного поддерева */
 	if((*proot)->key == newnode->key)
-		return NULL;	/* элемент с таким ключом в таблице – дереве есть */
-	ptr = (newnode->key < (*proot)->key) ?
-	&(*proot)->left : &(*proot)->right;
-	/* рекурсивный вызов функции включения нового элемента в выбранное
-	* поддерево */
+		return NULL;
+	ptr = (newnode->key < (*proot)->key) ?  &(*proot)->left : &(*proot)->right;
 	return instree(ptr, newnode);
 
 }
-
-/* Функция включения нового элемента в таблицу. Результат –NULL, если
-* элемент не может быть включен в таблицу, и указатель на новый элемент
-* в противном случае
-*/
 
 Node *insert(Node **proot, int64_t k, char *in)
 {
 	Node *cur, *ptr;
 	size_t inl = strlen(in);
-	/* создание нового элемента таблицы – дерева */
 	cur = malloc(sizeof(Node));
 	cur->info = malloc(inl+1);
 	if(!cur)
-		return NULL;	/* нет свободной памяти */
+		return NULL;
 	cur->key = k;
-	//cur->info = dupl(in);
 	strlcpy(cur->info,in,inl);
 	cur->left = cur->right = NULL;
-	/* включение нового элемента в дерево */
 	if(!(ptr = instree(proot, cur)))
 	{
 		puts("this key already in used");
@@ -256,17 +217,14 @@ void freetab(Node *proot)
 	Node *ptr = proot;
 	if (!proot)
 	{
-		/* дерево пусто */
 		return;
 	}
-	printf("deleting key %lld\n", proot->key);
+	printf("deleting key from memory %lld\n", proot->key);
 
 	freetab(proot->left);
 	freetab(proot->right);
 	free(proot->info);
 	free(proot);
-	/* рекурсивный вызов функции включения нового элемента в выбранное
-	* поддерево */
 }
 
 int64_t delTable(Node *a)
@@ -290,7 +248,6 @@ int dialog ( const char *msgs[], int argc)
 		puts(msgs[i]);
 	}
 	puts("============");
-	//scanf("%d", &i);
 	char field[MAX_LEN];
 	field[0]='a';
 	while ( !isdigit(*field) )
@@ -306,8 +263,8 @@ int dialog ( const char *msgs[], int argc)
 int main()
 {
 	Node a;
-	a.right=0;
-	a.left=0;
+	a.right=NULL;
+	a.left=NULL;
 	int rc;
 	while ( (rc = dialog(msgs, NMsgs)) )
 		if ( !fptr[rc](&a) )
