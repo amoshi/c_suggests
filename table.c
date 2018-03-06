@@ -176,12 +176,12 @@ int64_t d_delete(Node *a)
 		a->right = erase(a->right, key);
 		temp = a->right;
 	}
-	printf("\n\nResults:\n-------------\n");
-	if ( temp )
-		printf("delete key: success");
-	else
-		printf("delete key: no key");
-	printf("\n------\n\n");
+	//printf("\n\nResults:\n-------------\n");
+	//if ( temp )
+		//printf("delete key: success");
+	//else
+		//printf("delete key: no key");
+	//printf("\n------\n\n");
 	
 	return 1;
 }
