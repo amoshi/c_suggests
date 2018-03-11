@@ -186,29 +186,33 @@ int64_t d_delete(Node *a)
 	return 1;
 }
 
-int show ( Node *ptr )
+int64_t show ( Node *ptr, int64_t n )
 {
-	if ( ptr )
-	{
-		printf("key: %"PRId64", info: '%s'\n", ptr->key, ptr->info );
-	}
+	n++;
 	if ( ptr->left )
 	{
-		show(ptr->left);
+		n = show(ptr->left, n);
+	}
+	if ( ptr )
+	{
+		int64_t i;
+		for ( i=0; i<n; i++, printf("\t") );
+		printf("key: %"PRId64", info: '%s'\n", ptr->key, ptr->info );
 	}
 	if ( ptr->right )
 	{
-		show(ptr->right);
+		n = show(ptr->right, n);
 	}
-	return 1;
+	n--;
+	return n;
 }
 int64_t d_show(Node *a)
 {
 	int64_t i;
 	if ( a->left )
-		show(a->left);
+		show(a->left, 0);
 	if ( a->right )
-		show(a->right);
+		show(a->right, 0);
 	return 1;
 }
 
@@ -267,8 +271,9 @@ int main()
 	a.left=NULL;
 	int rc;
 	while ( (rc = dialog(msgs, NMsgs)) )
-		if ( !fptr[rc](&a) )
-			break;
+		if ( fptr[rc])
+			if ( !fptr[rc](&a) )
+				break;
 	printf("OK\n");
 	delTable(&a);
 }

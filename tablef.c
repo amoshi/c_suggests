@@ -470,7 +470,6 @@ int main()
 	char *ftab = malloc (FILENAME_MAX);
 	getfilename(ffile, ftab);
 	Node *a = startup(ftab);
-	printf("\n\n\n\n\n\n\n\n");
 	//show(a,"1");
 	printf("address of node is %p\n", a);
 	while ( (rc = dialog(msgs, NMsgs, ffile)) )

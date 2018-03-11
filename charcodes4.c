@@ -37,7 +37,8 @@ void erase (llstr_t *llstr)
 	ls = llstr->ls;
 	for ( i=0; i<n; i++ )
 	{
-		next = ls->next;
+		if ( ls->next)
+			next = ls->next;
 		ldel(ls);
 		ls = next;
 	}
@@ -122,7 +123,8 @@ void case_action (lstr_t *elem, llstr_t *nnstr, int64_t i)
 		{
 			isspace = 1;
 		}
-		if ( ( elem->c == '1' && elem->next->c == '0' ) || ( elem->c == '0' && elem->next->c == '1' ) )
+		//if ( ( elem->c == '1' && elem->next->c == '0' ) || ( elem->c == '0' && elem->next->c == '1' ) )
+		if ( ( elem->c == '0' && elem->next->c == '1' ) )
 		{
 			if ( isspace == 1 )
 			{
