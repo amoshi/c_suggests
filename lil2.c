@@ -122,7 +122,7 @@ LString *skipWord(LString *mylist)// пропуск слова в строке
 */
 LString* printFromTail(LString *mylist) {
     char bufword[16];
-    int len=0;
+    int len=0, f=0;
 
     LString *newlist = (LString*) malloc (sizeof(LString));
     LString *cur = newlist;
@@ -133,7 +133,8 @@ LString* printFromTail(LString *mylist) {
         len=lenWord(mylist)+1;
 
         int ibuf = len-1;
-        for(int i = 0; i<len; i++){
+        
+for(int i = 0; i<len; i++){
 
             bufword[ibuf] = mylist->s;
             ibuf--;
@@ -151,16 +152,27 @@ LString* printFromTail(LString *mylist) {
 
 
         for(int j = 0; j<len; j++){
-            if (bufword[0]!=' ' && bufword[0] != '\t'){
+            if ( bufword[0]!=' ' && bufword[0] != '\t' ){ int j1=0; printf( "%d<%d/2\n", j1, len);
+             for(; j1<(len/2);j1++){
+		
+                if(bufword[j1]==bufword[len]){
+                 len=len-1;
+                 printf("a0");  
+                                            }
+                else { f=1; puts("dferefew");}
+                if (f!=1){
+                printf("a");  
                 cur->s = bufword[j];
                 cur->next = malloc(sizeof(LString));
                 cur = cur->next;
+               }
             }
-        }
-        if( mylist && mylist->next && (bufword[0] != ' ' || bufword[0] != '\t')){
-            cur->next = malloc(sizeof(LString));
-            cur->s = ' ';
-            cur = cur->next;
+          }
+          if( mylist && mylist->next && (bufword[0] != ' ' || bufword[0] != '\t')){
+              cur->next = malloc(sizeof(LString));
+              cur->s = ' ';
+              cur = cur->next;
+          }
         }
     }
 
@@ -214,4 +226,3 @@ int main()
     }
     return 0;
 }
-
