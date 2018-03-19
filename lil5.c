@@ -93,6 +93,126 @@ void nulldetector(LString **mylist)
     }
 };
 
+LString* palindrom(LString *mylist)
+{
+	LString *ptr;
+	LString *def;
+	LString *cur;
+	LString *tmp1;
+	LString *tmp2;
+	LString *new = NULL;
+	LString *newptr = NULL;
+	for ( ptr = mylist; ptr; ptr = ptr->next )
+	{
+		tmp1 = malloc(sizeof(LString));
+		tmp1->next = NULL;
+		int c, d;
+		def = ptr;
+		for ( c = 0; ptr && ptr->s != ' ' && ptr->s != '\t'; ptr = ptr->next, c++ )
+		{
+			tmp1->s = ptr->s;
+			//printf("put %c(%p)\n", tmp1->s, tmp1);
+			tmp2 = malloc(sizeof(LString));
+			tmp2->next = tmp1;
+			tmp1 = tmp2;
+		}
+		tmp1 = tmp1->next;
+		free(tmp2);
+		tmp2 = tmp1;
+		//printf("c %c(%p)\n", def->s, def);
+		//printf("t %c(%p)\n", tmp1->s, tmp1);
+
+		for ( d = 0, cur = def; tmp1 && cur && tmp1->s == cur->s; printf("%c:%c\n", tmp1->s, cur->s ), tmp1 = tmp1->next, cur = cur->next, d++);
+
+		//printf("d=%d c=%d\n", d, c);
+		if ( d == c )
+		{
+			//puts("palindrome!");
+			if ( !new )
+			{
+				new = newptr = tmp2;
+				while ( new->next ) new = new->next;
+				new->next = NULL;
+			}
+			else
+			{
+				new->next = malloc(sizeof(LString));
+				new = new->next;
+				new->s = ' ';
+				new->next = tmp2;
+				while ( new->next ) new = new->next;
+				new->next = NULL;
+			}
+		}
+		if ( !(ptr) )
+			break;
+	}
+	return newptr;
+}
+
+LString* palindr(LString *mylist)
+{
+    LString *ptr;
+    LString *start = mylist;
+    LString *tmp = malloc ( sizeof(LString) );
+    LString *tmp1 = tmp;
+    tmp->next = NULL;
+
+    while ( mylist )
+    {
+        while((mylist) && (mylist->s!=' ') && (mylist->s!='\t'))
+        {
+            tmp1->s = mylist->s;
+            mylist = mylist->next;
+            tmp = malloc ( sizeof(LString) );
+            tmp->next = tmp1;
+            tmp1 = tmp;
+        }
+        if ( !mylist )
+            break;
+        tmp = malloc ( sizeof(LString) );
+        tmp1->s = ' ';
+        tmp->next = tmp1;
+        tmp1 = tmp;
+        if ( mylist->next )
+            mylist = mylist->next;
+    }
+
+    tmp = tmp->next;
+    free(tmp1);
+
+    strOutput(tmp);
+
+    mylist = start;
+    LString *tmpstart = tmp;
+    
+    while ( mylist )
+    {
+        int flag = 0;
+        while((mylist) && (mylist->s!=' ') && (mylist->s!='\t'))
+        {
+            printf("comparing %c and %c\n", tmp->s, mylist->s );
+            if ( tmp->s != mylist->s )
+            {
+                flag = 1;
+                break;
+            }
+            mylist = mylist->next;
+            tmp = tmp->next;
+        }
+        if ( flag )
+            puts("NO palindrome");
+        if ( !flag )
+            puts("palindrome");
+        if ( mylist && mylist->next )
+            mylist = mylist->next;
+        if ( tmp && tmp->next )
+            tmp = tmp->next;
+    }
+
+    return ptr;
+};
+
 LString *deleteSpace(LString *mylist)
 {
     LString *line;
@@ -215,6 +335,10 @@ int main()
         nulldetector(&mylist);
         printf("result: ");
         strOutput(mylist);
+        LString *pal = palindrom(mylist);
+	puts("palindrom");
+        strOutput(pal);
+	puts("erase");
         mylist = erase(mylist);
     }
     return 0;
