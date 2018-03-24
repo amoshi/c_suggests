@@ -31,8 +31,8 @@ start:
 	cbw
 
 	add	ax,bx		; eax = a+b
-	mov	ab,ax		; swap a+b to ab
 	jo	met
+	mov	ab,ax		; swap a+b to ab
 
 	mov	bx,three
 	cmp	bx,0
@@ -116,7 +116,7 @@ start:
 
 	xor	ebx,ebx
 	mov	bx,adiv2
-	imul	adiv2		; a(3*c-d^3)/2*e^2
+	imul	bx		; a(3*c-d^3)/2*e^2
 	rol	eax,16
 	mov	ax,dx
 	ror	eax,16		; eax = a(3*c-d^3)/2*e^2
@@ -125,10 +125,9 @@ start:
 
 	xor	eax,eax
 	xor	ebx,ebx
-	add	eax,ebx		; right+left
 	mov	eax,right
 	mov	ebx,left
-	add	eax,ebx
+	add	eax,ebx		; right+left
 	jo	met
 
 met:
