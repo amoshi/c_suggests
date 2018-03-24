@@ -31,7 +31,7 @@ start:
 	mov	ab,ax		; swap a+b to ab
 	jo	met
 
-	mov	bx,threed
+	mov	bx,three
 	cmp	bx,0
 	je	met
 	idiv	bx		; al = (a+b)/3
