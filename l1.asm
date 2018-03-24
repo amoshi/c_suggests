@@ -1,6 +1,6 @@
-.386
 .model	small
 .stack	100h
+.386
 .data
 a	db	4
 b	db	3
