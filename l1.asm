@@ -15,6 +15,7 @@ twod	dd	2
 right	dd	0
 left	dd	0
 adiv2	dw	0
+ab	dw	0
 
 .code
 start:
