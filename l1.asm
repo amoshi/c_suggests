@@ -19,6 +19,9 @@ ab	dw	0
 
 .code
 start:
+	mov	ax,@data
+	mov	ds,ax
+
 	xor	eax,eax
 	xor	ebx,ebx
 	mov	al,b
@@ -98,6 +101,7 @@ start:
 	jo	met
 	mov	ecx,eax		; ecx=3c-d^3
 
+	xor	eax,eax
 	mov	al,e
 	cbw
 	imul	ax		; e^2
@@ -122,6 +126,9 @@ start:
 	xor	eax,eax
 	xor	ebx,ebx
 	add	eax,ebx		; right+left
+	mov	eax,right
+	mov	ebx,left
+	add	eax,ebx
 	jo	met
 
 met:
