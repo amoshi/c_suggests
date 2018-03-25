@@ -9,7 +9,7 @@
 typedef struct rb_node 
 {
     int red;
-    int64_t data;
+    int64_t key;
     struct rb_node *link[2];
 } rb_node;
 
@@ -45,12 +45,12 @@ rb_node *rb_double ( rb_node *root, int dir )
     return rb_single ( root, dir );
 }
 
-rb_node *make_node ( int64_t data )
+rb_node *make_node ( int64_t key )
 {
     rb_node *rn = malloc ( sizeof *rn );
   
     if ( rn != NULL ) {
-        rn->data = data;
+        rn->key = key;
         rn->red = 1; /* –инициализация красным цветом */
         rn->link[0] = NULL;
         rn->link[1] = NULL;
@@ -58,12 +58,12 @@ rb_node *make_node ( int64_t data )
     return rn;
 }
 
-int rb_insert ( rb_tree *tree, int64_t data )
+int rb_insert ( rb_tree *tree, int64_t key )
 {
 	/* если добавляемый элемент оказывается первым – то ничего делать не нужно*/
 	if ( tree->root == NULL )
 	{
-	        tree->root = make_node ( data );
+	        tree->root = make_node ( key );
 	        if ( tree->root == NULL )
 	       		return 0;
 	}
@@ -87,7 +87,7 @@ int rb_insert ( rb_tree *tree, int64_t data )
 			{
 				flag = 0;
 			        /* вставка ноды */
-			        p->link[dir] = q = make_node ( data );
+			        p->link[dir] = q = make_node ( key );
 			        tree->count ++ ;
 			        if ( q == NULL )
 			       		return 0;
@@ -111,15 +111,15 @@ int rb_insert ( rb_tree *tree, int64_t data )
 			}
 	
 			/* такой узел в дереве уже есть	- выход из функции*/
-			if ( q->data == data )
+			if ( q->key == key )
 			{
 				if ( flag )
-					printf("%"u64" already exists\n", data);
+					printf("%"u64" already exists\n", key);
 				break;
 			}
 	
 			last = dir;
-			dir = q->data < data;
+			dir = q->key < key;
 	
 			if ( g != NULL )
 			        t = g;
@@ -134,7 +134,7 @@ int rb_insert ( rb_tree *tree, int64_t data )
 	return 1;
 }
 
-int rb_delete ( rb_tree *tree, int64_t data )
+int rb_delete ( rb_tree *tree, int64_t key )
  {
    if ( tree->root != NULL ) 
    {
@@ -155,10 +155,10 @@ int rb_delete ( rb_tree *tree, int64_t data )
        /* сохранение иерархии узлов во временные переменные */
        g = p, p = q;
        q = q->link[dir];
-       dir = q->data < data;
+       dir = q->key < key;
   
        /* сохранение найденного узла */
-       if ( q->data == data )
+       if ( q->key == key )
          f = q;
   
        if ( !is_red ( q ) && !is_red ( q->link[dir] ) ) {
@@ -195,7 +195,7 @@ int rb_delete ( rb_tree *tree, int64_t data )
   
      /* удаление найденного узла */
      if ( f != NULL ) {
-       f->data = q->data;
+       f->key = q->key;
        p->link[p->link[1] == q] =
          q->link[q->link[0] == NULL];
        free ( q );
@@ -215,7 +215,7 @@ uint64_t tree_show(rb_node *x, uint64_t l)
 	uint64_t i;
 	for ( i=0; i<l; i++)
 		printf(" ");
-	printf("%"u64" (%d)\n",x->data, x->red);
+	printf("%"u64" (%d)\n",x->key, x->red);
 	l++;
 	if ( x->link[0] )
 		l = tree_show(x->link[0], l++);
@@ -245,7 +245,7 @@ uint64_t tree_build(rb_node *x, uint64_t l)
 	uint64_t i;
 	for ( i=0; i<l; i++)
 		printf(" ");
-	printf("%"u64" (%d)\n",x->data, x->red);
+	printf("%"u64" (%d)\n",x->key, x->red);
 	return l;
 }
 
@@ -257,13 +257,13 @@ void rb_build ( rb_tree *tree )
 
 rb_tree* tree_get ( rb_node *x, int64_t key )
 {
-	if (  x && x->data < key )
+	if (  x && x->key < key )
 		return tree_get(x->link[0], key);
-	else if ( x && x->data > key )
+	else if ( x && x->key > key )
 		return tree_get(x->link[1], key);
-	else if ( x && x->data == key )
+	else if ( x && x->key == key )
 	{
-		printf("finded: %"u64"\n", x->link[0]->data);
+		printf("finded: %"u64"\n", x->link[0]->key);
 		return tree_get(x->link[1], key);
 	}
 	else
@@ -277,13 +277,13 @@ int rb_find ( rb_tree *tree, int64_t key )
 	rb_node *x = tree->root;
 	while ( x )
 	{
-		if ( x->data > key )
+		if ( x->key > key )
 			x = x->link[0];
-		else if ( x->data < key )
+		else if ( x->key < key )
 			x = x->link[1];
-		else if ( x->data == key )
+		else if ( x->key == key )
 		{
-			printf("finded: %"u64"\n", x->data);
+			printf("finded: %"u64"\n", x->key);
 			return 1;
 		}
 		else
@@ -301,14 +301,14 @@ void rb_getmax(rb_tree *tree)
 	rb_node *x = tree->root;
 	while ( x )
 	{
-		printf("trying %"u64"\n", x->data);
-		if ( x->link[1] && x->link[1]->data > x->data )
+		printf("trying %"u64"\n", x->key);
+		if ( x->link[1] && x->link[1]->key > x->key )
 			x = x->link[1];
-		else if ( x->link[0] && x->link[0]->data > x->data )
+		else if ( x->link[0] && x->link[0]->key > x->key )
 			x = x->link[0];
 		else
 		{
-			printf("max: %"u64"\n", x->data);
+			printf("max: %"u64"\n", x->key);
 			return;
 		}
 	}
