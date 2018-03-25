@@ -3,9 +3,22 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <time.h>
+#include <sys/time.h>
+
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
 #define MAX_LEN	100000
 #define u64	PRIu64
 #define d64	PRId64
+
+typedef struct r_time
+{
+	int sec;
+	int nsec;
+} r_time;
 
 typedef struct rb_node 
 {
@@ -20,6 +33,30 @@ typedef struct rb_tree
 	struct rb_node *root;
 	int count;
 } rb_tree;
+
+r_time setrtime()
+{
+#ifdef __MACH__
+	clock_serv_t cclock;
+	mach_timespec_t timer1;
+	host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+	clock_get_time(cclock, &timer1);
+	mach_port_deallocate(mach_task_self(), cclock);
+
+#else
+	struct timespec timer1;
+	clock_gettime(CLOCK_REALTIME, &timer1);
+#endif
+	r_time rt;
+	rt.sec=timer1.tv_sec;
+	rt.nsec=timer1.tv_nsec;
+	return rt;
+}
+
+void getrtime(r_time t1, r_time t2)
+{
+	printf("complete for: %u.%09d sec\n",t2.sec-t1.sec,t2.nsec-t1.nsec);
+}
 
 int is_red ( rb_node *node )
 {
@@ -49,7 +86,6 @@ rb_node *rb_double ( rb_node *root, int dir )
 
 rb_node *make_node ( int64_t key, char *field )
 {
-	printf("make field=%s\n", field);
 	rb_node *rn = malloc ( sizeof *rn );
   
 	if ( rn != NULL ) {
@@ -64,7 +100,6 @@ rb_node *make_node ( int64_t key, char *field )
 
 int rb_insert ( rb_tree *tree, int64_t key, char *field )
 {
-	printf("field=%s\n", field);
 	/* если добавляемый элемент оказывается первым – то ничего делать не нужно*/
 	if ( tree->root == NULL )
 	{
@@ -316,7 +351,7 @@ void rb_getmax(rb_tree *tree)
 	}
 }
 
-const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Build tree" };
+const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Build tree", "6. Get max" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 int64_t d_add(rb_tree *tree)
@@ -337,7 +372,10 @@ int64_t d_add(rb_tree *tree)
 	char *buf = malloc ( len );
 	strlcpy(buf, field, len);
 	buf[len] = 0;
+	r_time t1 = setrtime();
 	rb_insert ( tree, key, buf );
+	r_time t2 = setrtime();
+	getrtime(t1, t2);
 	return 1;
 }
 int64_t d_find(rb_tree *tree)
@@ -351,7 +389,10 @@ int64_t d_find(rb_tree *tree)
 	}
 	int64_t key = atoll(field);
 	
+	r_time t1 = setrtime();
 	rb_node *res = rb_find ( tree, key );
+	r_time t2 = setrtime();
+	getrtime(t1, t2);
 	printf("\n\nResults:\n-------------\n");
 	if ( res )
 		printf("key: %"PRId64", info: '%s'\n", res->key, res->info);
@@ -369,23 +410,41 @@ int64_t d_delete(rb_tree *tree)
 		fgets(field, MAX_LEN, stdin);
 	}
 	int64_t key = atoll(field);
+	r_time t1 = setrtime();
 	rb_delete(tree,key);
+	r_time t2 = setrtime();
+	getrtime(t1, t2);
 	
 	return 1;
 }
 int64_t d_show(rb_tree *tree)
 {
+	r_time t1 = setrtime();
 	rb_show(tree);
+	r_time t2 = setrtime();
+	getrtime(t1, t2);
 	return 1;
 }
 
 int64_t d_build(rb_tree *tree)
 {
+	r_time t1 = setrtime();
 	rb_build(tree);
+	r_time t2 = setrtime();
+	getrtime(t1, t2);
 	return 1;
 }
 
-int64_t (*fptr[])(rb_tree *) = {NULL, d_add, d_find, d_delete, d_show, d_build, NULL};
+int64_t d_max(rb_tree *tree)
+{
+	r_time t1 = setrtime();
+	rb_getmax(tree);
+	r_time t2 = setrtime();
+	getrtime(t1, t2);
+	return 1;
+}
+
+int64_t (*fptr[])(rb_tree *) = {NULL, d_add, d_find, d_delete, d_show, d_build, d_max, NULL};
 
 int dialog ( const char *msgs[], int argc)
 {
@@ -411,6 +470,9 @@ int dialog ( const char *msgs[], int argc)
 
 void file_input(rb_tree *tree, char *file)
 {
+
+	r_time t1 = setrtime();
+
 	FILE *fd = fopen(file, "r");
 	if ( !fd ) 
 		return;
@@ -420,19 +482,22 @@ void file_input(rb_tree *tree, char *file)
 	int64_t key;
 	for ( i=0; fgets(field, MAX_LEN, fd); i++ )
 	{
-		printf("-------\nfield = '%s'\n", field);
+		//printf("-------\nfield = '%s'\n", field);
 		int64_t key = atoll(field);
-		printf("key %"d64" from %s\n", key, field);
+		//printf("key %"d64" from %s\n", key, field);
 		fgets(field, MAX_LEN, fd);
 		size_t len = strlen(field);
 		field[len-1] = 0;
-		printf("key %"d64", info: '%s'\n", key, field);
+		//printf("key %"d64", info: '%s'\n", key, field);
 		char *buf = malloc ( len );
 		strlcpy(buf, field, len);
 		buf[len] = 0;
 		rb_insert ( tree, key, buf );
 	}
+	printf("%"u64" keys loaded from file %s\n", i, file);
 
+	r_time t2 = setrtime();
+	getrtime(t1, t2);
 	fclose(fd);
 }
 
