@@ -13,6 +13,8 @@
 #define MAX_LEN	100000
 #define u64	PRIu64
 #define d64	PRId64
+#define	RED	1
+#define	BLACK	0
 
 typedef struct r_time
 {
@@ -22,7 +24,7 @@ typedef struct r_time
 
 typedef struct rb_node 
 {
-	int red;
+	int color;
 	int64_t key;
 	char *info;
 	struct rb_node *link[2];
@@ -60,7 +62,7 @@ void getrtime(r_time t1, r_time t2)
 
 int is_red ( rb_node *node )
 {
-	return node != NULL && node->red == 1;
+	return node != NULL && node->color == RED;
 }
 
 /* функция для однократного поворота узла */
@@ -71,8 +73,8 @@ rb_node *rb_single ( rb_node *root, int dir )
 	root->link[!dir] = save->link[dir];
 	save->link[dir] = root;
  
-	root->red = 1;
-	save->red = 0;
+	root->color = RED;
+	save->color = BLACK;
  
 	return save;
 }
@@ -90,7 +92,7 @@ rb_node *make_node ( int64_t key, char *field )
   
 	if ( rn != NULL ) {
 		rn->key = key;
-		rn->red = 1; /* –инициализация красным цветом */
+		rn->color = RED; /* –инициализация красным цветом */
 		rn->link[0] = NULL;
 		rn->link[1] = NULL;
 		rn->info = field;
@@ -135,9 +137,9 @@ int rb_insert ( rb_tree *tree, int64_t key, char *field )
 			else if ( is_red ( q->link[0] ) && is_red ( q->link[1] ) ) 
 			{
 			        /* смена цвета */
-			        q->red = 1;
-			        q->link[0]->red = 0;
-			        q->link[1]->red = 0;
+			        q->color = RED;
+			        q->link[0]->color = BLACK;
+			        q->link[1]->color = BLACK;
 			}
 			       /* совпадение 2-х красных цветов */
 			if ( is_red ( q ) && is_red ( p ) ) 
@@ -170,7 +172,7 @@ int rb_insert ( rb_tree *tree, int64_t key, char *field )
 		tree->root = head.link[1];
 	}
 	/* сделать корень дерева черным */
-	tree->root->red = 0;
+	tree->root->color = BLACK;
 	return 1;
 }
 
@@ -212,9 +214,9 @@ int rb_delete ( rb_tree *tree, int64_t key )
 					if ( s != NULL ) {
 						if ( !is_red ( s->link[!last] ) && !is_red ( s->link[last] ) ) {
 							/* смена цвета узлов */
-							p->red = 0;
-							s->red = 1;
-							q->red = 1;
+							p->color = BLACK;
+							s->color = RED;
+							q->color = RED;
 						}
 						else {
 							int dir2 = g->link[1] == p;
@@ -225,9 +227,9 @@ int rb_delete ( rb_tree *tree, int64_t key )
 								g->link[dir2] = rb_single ( p, last );
  
 							/* корректировка цвета узлов */
-							q->red = g->link[dir2]->red = 1;
-							g->link[dir2]->link[0]->red = 0;
-							g->link[dir2]->link[1]->red = 0;
+							q->color = g->link[dir2]->color = RED;
+							g->link[dir2]->link[0]->color = BLACK;
+							g->link[dir2]->link[1]->color = BLACK;
 						}
 					}
 				}
@@ -246,7 +248,7 @@ int rb_delete ( rb_tree *tree, int64_t key )
 		/* обновление указателя на корень дерева */
 		tree->root = head.link[1];
 		if ( tree->root != NULL )
-			tree->root->red = 0;
+			tree->root->color = BLACK;
 	}
  
 	return 1;
