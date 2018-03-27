@@ -15,6 +15,8 @@
 #define d64	PRId64
 #define	RED	1
 #define	BLACK	0
+#define	RIGHT	1
+#define	LEFT	0
 
 typedef struct r_time
 {
@@ -65,7 +67,6 @@ int is_red ( rb_node *node )
 	return node != NULL && node->color == RED;
 }
 
-/* функция для однократного поворота узла */
 rb_node *rb_single ( rb_node *root, int dir )
 {
 	rb_node *save = root->link[!dir];
@@ -79,7 +80,6 @@ rb_node *rb_single ( rb_node *root, int dir )
 	return save;
 }
  
-/* функция для двукратного поворота узла */
 rb_node *rb_double ( rb_node *root, int dir )
 {
 	root->link[!dir] = rb_single ( root->link[!dir], !dir );
@@ -92,9 +92,9 @@ rb_node *make_node ( int64_t key, char *field )
   
 	if ( rn != NULL ) {
 		rn->key = key;
-		rn->color = RED; /* –инициализация красным цветом */
-		rn->link[0] = NULL;
-		rn->link[1] = NULL;
+		rn->color = RED;
+		rn->link[LEFT] = NULL;
+		rn->link[RIGHT] = NULL;
 		rn->info = field;
 	}
 	return rn;
@@ -102,7 +102,6 @@ rb_node *make_node ( int64_t key, char *field )
 
 int rb_insert ( rb_tree *tree, int64_t key, char *field )
 {
-	/* если добавляемый элемент оказывается первым – то ничего делать не нужно*/
 	if ( tree->root == NULL )
 	{
 	        tree->root = make_node ( key, field );
@@ -111,40 +110,35 @@ int rb_insert ( rb_tree *tree, int64_t key, char *field )
 	}
 	else
 	{
-		rb_node head = {0}; /* временный корень дерева*/
-		rb_node *g, *t;		 /* дедушка и родитель */
-		rb_node *p, *q;		 /* родитель и итератор */
+		rb_node head = {0};
+		rb_node *g, *t;
+		rb_node *p, *q;
 		int dir = 0, last;
 	
-		/* вспомогательные переменные */
 		t = &head;
 		g = p = NULL;
-		q = t->link[1] = tree->root;
+		q = t->link[RIGHT] = tree->root;
 	
-		/* основной цикл прохода по дереву */
 		for (;;) 
 		{
 			int flag = 1;
 			if ( q == NULL )
 			{
 				flag = 0;
-			        /* вставка ноды */
 			        p->link[dir] = q = make_node ( key, field );
 			        tree->count ++ ;
 			        if ( q == NULL )
 			       		return 0;
 			}
-			else if ( is_red ( q->link[0] ) && is_red ( q->link[1] ) ) 
+			else if ( is_red ( q->link[LEFT] ) && is_red ( q->link[RIGHT] ) ) 
 			{
-			        /* смена цвета */
 			        q->color = RED;
-			        q->link[0]->color = BLACK;
-			        q->link[1]->color = BLACK;
+			        q->link[LEFT]->color = BLACK;
+			        q->link[RIGHT]->color = BLACK;
 			}
-			       /* совпадение 2-х красных цветов */
 			if ( is_red ( q ) && is_red ( p ) ) 
 			{
-			        int dir2 = t->link[1] == g;
+			        int dir2 = t->link[RIGHT] == g;
 	
 			        if ( q == p->link[last] )
 			       		t->link[dir2] = rb_single ( g, !last );
@@ -152,7 +146,6 @@ int rb_insert ( rb_tree *tree, int64_t key, char *field )
 			       		t->link[dir2] = rb_double ( g, !last );
 			}
 	
-			/* такой узел в дереве уже есть	- выход из функции*/
 			if ( q->key == key )
 			{
 				if ( flag )
@@ -168,10 +161,8 @@ int rb_insert ( rb_tree *tree, int64_t key, char *field )
 			g = p, p = q;
 			q = q->link[dir];
 		}
-		/* обновить указатель на корень дерева*/
-		tree->root = head.link[1];
+		tree->root = head.link[RIGHT];
 	}
-	/* сделать корень дерева черным */
 	tree->root->color = BLACK;
 	return 1;
 }
@@ -188,7 +179,7 @@ int rb_delete ( rb_tree *tree, int64_t key )
 		/* инициализация вспомогательных переменных */
 		q = &head;
 		g = p = NULL;
-		q->link[1] = tree->root;
+		q->link[RIGHT] = tree->root;
  
 		/* поиск и удаление */
 		while ( q->link[dir] != NULL )
@@ -219,7 +210,7 @@ int rb_delete ( rb_tree *tree, int64_t key )
 							q->color = RED;
 						}
 						else {
-							int dir2 = g->link[1] == p;
+							int dir2 = g->link[RIGHT] == p;
  
 							if ( is_red ( s->link[last] ) )
 								g->link[dir2] = rb_double ( p, last );
@@ -228,8 +219,8 @@ int rb_delete ( rb_tree *tree, int64_t key )
  
 							/* корректировка цвета узлов */
 							q->color = g->link[dir2]->color = RED;
-							g->link[dir2]->link[0]->color = BLACK;
-							g->link[dir2]->link[1]->color = BLACK;
+							g->link[dir2]->link[LEFT]->color = BLACK;
+							g->link[dir2]->link[RIGHT]->color = BLACK;
 						}
 					}
 				}
@@ -239,14 +230,14 @@ int rb_delete ( rb_tree *tree, int64_t key )
 		/* удаление найденного узла */
 		if ( f != NULL ) {
 			f->key = q->key;
-			p->link[p->link[1] == q] =
-				q->link[q->link[0] == NULL];
+			p->link[p->link[RIGHT] == q] =
+				q->link[q->link[LEFT] == NULL];
 			free ( q->info );
 			free ( q );
 		}
  
 		/* обновление указателя на корень дерева */
-		tree->root = head.link[1];
+		tree->root = head.link[RIGHT];
 		if ( tree->root != NULL )
 			tree->root->color = BLACK;
 	}
@@ -257,10 +248,10 @@ int rb_delete ( rb_tree *tree, int64_t key )
 void tree_show(rb_node *x)
 {
 	printf("%"u64": '%s'\n",x->key, x->info);
-	if ( x->link[0] )
-		tree_show(x->link[0]);
-	if ( x->link[1] )
-		tree_show(x->link[1]);
+	if ( x->link[LEFT] )
+		tree_show(x->link[LEFT]);
+	if ( x->link[RIGHT] )
+		tree_show(x->link[RIGHT]);
 }
 
 void rb_show ( rb_tree *tree )
@@ -273,16 +264,16 @@ uint64_t tree_build(rb_node *x, uint64_t l)
 {
 	l++;
 
-	if ( x->link[0] )
-		l = tree_build(x->link[0], l++);
+	if ( x->link[LEFT] )
+		l = tree_build(x->link[LEFT], l++);
 
 	uint64_t i;
 	for ( i=0; i<l; i++)
 		printf("\t");
 	printf("%"u64" (%s)\n",x->key, x->info);
 
-	if ( x->link[1] )
-		l = tree_build(x->link[1], l++);
+	if ( x->link[RIGHT] )
+		l = tree_build(x->link[RIGHT], l++);
 	l--;
 
 	return l;
@@ -297,13 +288,13 @@ void rb_build ( rb_tree *tree )
 rb_tree* tree_get ( rb_node *x, int64_t key )
 {
 	if (  x && x->key < key )
-		return tree_get(x->link[0], key);
+		return tree_get(x->link[LEFT], key);
 	else if ( x && x->key > key )
-		return tree_get(x->link[1], key);
+		return tree_get(x->link[RIGHT], key);
 	else if ( x && x->key == key )
 	{
-		printf("finded: %"u64"\n", x->link[0]->key);
-		return tree_get(x->link[1], key);
+		printf("finded: %"u64"\n", x->link[LEFT]->key);
+		return tree_get(x->link[RIGHT], key);
 	}
 	else
 		return NULL;
@@ -317,9 +308,9 @@ rb_node* rb_find ( rb_tree *tree, int64_t key )
 	while ( x )
 	{
 		if ( x->key > key )
-			x = x->link[0];
+			x = x->link[LEFT];
 		else if ( x->key < key )
-			x = x->link[1];
+			x = x->link[RIGHT];
 		else if ( x->key == key )
 		{
 			printf("finded: %"u64"\n", x->key);
@@ -341,10 +332,10 @@ void rb_getmax(rb_tree *tree)
 	while ( x )
 	{
 		printf("trying %"u64"\n", x->key);
-		if ( x->link[1] && x->link[1]->key > x->key )
-			x = x->link[1];
-		else if ( x->link[0] && x->link[0]->key > x->key )
-			x = x->link[0];
+		if ( x->link[RIGHT] && x->link[RIGHT]->key > x->key )
+			x = x->link[RIGHT];
+		else if ( x->link[LEFT] && x->link[LEFT]->key > x->key )
+			x = x->link[RIGHT];
 		else
 		{
 			printf("max: %"u64"\n", x->key);
