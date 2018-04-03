@@ -260,6 +260,23 @@ void rb_show ( rb_tree *tree )
 		tree_show(tree->root);
 }
 
+void tree_free(rb_node *x)
+{
+	printf("freeing %"u64": '%s'\n",x->key, x->info);
+	if ( x->steam[LEFT] )
+		tree_free(x->steam[LEFT]);
+	if ( x->steam[RIGHT] )
+		tree_free(x->steam[RIGHT]);
+	free (x->info);
+	free (x);
+}
+
+void rb_free ( rb_tree *tree )
+{
+	if ( tree && tree->root )
+		tree_free(tree->root);
+}
+
 uint64_t tree_build(rb_node *x, uint64_t l)
 {
 	l++;
@@ -388,7 +405,7 @@ int64_t d_find(rb_tree *tree)
 	getrtime(t1, t2);
 	printf("\n\nResults:\n-------------\n");
 	if ( res )
-		printf("key: %"PRId64", info: '%s'\n", res->key, res->info);
+		printf("key: %"d64", info: '%s'\n", res->key, res->info);
 	printf("\n------\n\n");
 	
 	return 1;
@@ -497,22 +514,7 @@ void file_input(rb_tree *tree, char *file)
 int main(int argc, char **argv)
 {
 	rb_tree *tree = calloc(1,sizeof(rb_tree));
-	//if ( argc<4 )
-	//	return 1;
 	int i;
-	//for ( i=0; i<argc-2; i++ )
-	//{
-	//	rb_insert ( tree, atoi(argv[i]) );
-	//}
-	//rb_delete(tree, atoi(argv[i]));
-	//printf("show:\n");
-	//rb_show ( tree );
-	//printf("build:\n");
-	//rb_build ( tree );
-	//printf("get:\n");
-	//rb_find(tree, atoi(argv[i+1]));
-	//printf("max:\n");
-	//rb_getmax(tree);
 
 	if ( argc > 1 )
 	{
@@ -525,4 +527,5 @@ int main(int argc, char **argv)
                         if ( !fptr[rc](tree) )
                                 break;
         printf("OK\n");
+	rb_free(tree);
 }

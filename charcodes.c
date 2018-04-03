@@ -36,25 +36,17 @@ size_t input (char ***istr)
 	char *arg = malloc( ARG_INPUT_MAXSIZE );
 
 	istr[0] = malloc( (sizeof(char*))*ARG_ARRAY_MAXSIZE );
-	int64_t i = 0;
-	int n, rc;
+	int64_t i;
 
 	printf("enter string:\n\t");
-        do {
-                n = scanf("%1000[^\n]", arg);
-                if ( n < 0 )
-                {
-                        rc = 0;
-                        continue;
-                }
-                else
-                        scanf("%*c");
+	for ( i=0; fgets(arg, ARG_INPUT_MAXSIZE, stdin); i++ )
+	{
+		printf("\t");
 		size_t arg_len = strlen(arg);
+		malloc(arg_len);
 		istr[0][i] = malloc(arg_len);
 		strlcpy(istr[0][i],arg,arg_len);
-		i++;
-        } while ( n > 0 );
-
+	}
 	return i;
 }
 
@@ -76,8 +68,7 @@ void case_action (char *s, char *sz, size_t sn)
 				k++;
 			}
 		}
-		//if ( ( !strncmp(s+j, "1", 1) && !strncmp(s+j+1, "0", 1) ) || ( !strncmp(s+j, "0", 1) && !strncmp(s+j+1, "1", 1) ) )
-		if ( ( !strncmp(s+j, "0", 1) && !strncmp(s+j+1, "1", 1) ) )
+		if ( ( !strncmp(s+j, "1", 1) && !strncmp(s+j+1, "0", 1) ) || ( !strncmp(s+j, "0", 1) && !strncmp(s+j+1, "1", 1) ) )
 		{
 			sz[k] = s[j];
 			sz[k+1] = s[j+1];
