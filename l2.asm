@@ -2,7 +2,6 @@
 .stack	100h
 .386
 .data
-;wrd1	dw	1000101000100100b
 wrd1	dw	0000000000000000b
 wrd2	dw	65000
 res	dw	0
