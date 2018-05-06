@@ -216,6 +216,7 @@ int64_t d_add(Table *table)
 	//printf("key=%"PRId64"\n", key);
 	printf("info: ");
 	fgets(field, MAX_LEN, stdin);
+	field[strlen(field)-1]=0;
 	//printf("info=%s\n", field);
 	insert(table, key, field);
 	return 1;
@@ -277,6 +278,7 @@ int64_t d_replace(Table *table)
 	{
 		printf("info: ");
 		fgets(field, MAX_LEN, stdin);
+		field[strlen(field)-1]=0;
 		printf("- key: %"PRId64", release: %"PRId64" info: '%s'\n", key, info->release, info->string);
 		size_t len = strlen(field);
 		if ( strlen(info->string)<len)
