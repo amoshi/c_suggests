@@ -176,7 +176,7 @@ Node *insert(Node **proot, int k, char *in)
 {
 	Node *cur, *ptr;
 	size_t inl = strlen(in);
-	cur = malloc(sizeof(Node));
+	cur = (Node*)malloc(sizeof(Node));
 	cur->info = malloc(inl+1);
 	if(!cur)
 		return NULL;
@@ -396,7 +396,7 @@ void file_input(Node *tree, char *file)
 		size_t len = strlen(field);
 		field[len-1] = 0;
 		//printf("key %"d64", info: '%s'\n", key, field);
-		char *buf = malloc ( len );
+		char *buf = (char*)malloc ( len );
 		strncpy(buf, field, len);
 		buf[len] = 0;
 		insert ( &(tree->left), key, buf );
