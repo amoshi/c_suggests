@@ -14,7 +14,7 @@ typedef struct Node
 	struct Node *ptr;
 } Node;
 
-const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show" };
+const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Bypass" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 Node *search (Node *proot, int64_t key)
@@ -99,24 +99,54 @@ Node *instree (Node **proot, Node *newnode)
 
 }
 
-Node* rev_normalize(Node *proot, Node *next)
+void rev_normalize(Node *proot, Node *next, Node *par)
 {
+	Node *left = NULL;
+	int flag = 0;
 	if ( proot->left )
 	{
+		puts("10");
 		if ( proot->right )
-			rev_normalize(proot->left, proot->right);
+			rev_normalize(proot->left, proot->right, proot);
 		else
-			rev_normalize(proot->left, proot);
+			rev_normalize(proot->left, proot, proot);
 	}
-	if ( proot->right )
+	else if ( proot->right )
 	{
-		rev_normalize(proot->right, proot);
+		left = proot->left;
+		flag = 1;
 	}
+	if ( proot->right && !flag )
+	{
+		printf("trying %"PRId64"\n", proot->key);
+		rev_normalize(proot->right, proot, proot);
+	}
+	else if (proot->right && flag )
+		rev_normalize(proot->right, par->left, proot);
 	if ( next )
 		printf("set thread for %"PRId64" to %"PRId64"\n", proot->key, next->key);
 	else
 		printf("passing %"PRId64"\n", proot->key);
 	proot->ptr = next;
+}
+
+void linker(Node *proot)
+{
+	if (!proot || !(proot->left) || !(proot->right) )
+		return;
+	Node *ptr = proot->left;
+
+	Node *rptr = proot->right;
+	while ( (rptr->right) || (rptr->left) )
+	{
+		if (rptr->left)
+			rptr = rptr->left;
+		else if (rptr->right)
+			rptr = rptr->right;
+	}
+
+	printf("linker set %"PRId64" to %"PRId64"\n", ptr->key, rptr->key);
+	ptr->ptr = rptr;
 }
 
 void rrev_normalize(Node *proot, Node *next)
@@ -125,14 +155,16 @@ void rrev_normalize(Node *proot, Node *next)
 	{
 		puts("1");
 		if ( proot->right )
-			rev_normalize(proot->left, proot->right);
+			rev_normalize(proot->left, proot->right, proot);
 		else
-			rev_normalize(proot->left, proot);
+			rev_normalize(proot->left, proot, proot);
 	}
+	linker(proot);
 	if ( proot->right )
 	{
 		puts("1");
-		rev_normalize(proot->right, proot);
+		
+		rev_normalize(proot->right, proot, proot);
 	}
 	if ( next )
 		printf("\tset thread for %"PRId64" to %"PRId64"\n", proot->key, next->key);
@@ -243,9 +275,9 @@ int64_t d_delete(Node *a)
 int64_t show ( Node *ptr, int64_t n )
 {
 	n++;
-	if ( ptr->left )
+	if ( ptr->right )
 	{
-		n = show(ptr->left, n);
+		n = show(ptr->right, n);
 	}
 	if ( ptr )
 	{
@@ -256,9 +288,9 @@ int64_t show ( Node *ptr, int64_t n )
 		else
 			printf("key: %"PRId64", info: '%s'\n", ptr->key, ptr->info );
 	}
-	if ( ptr->right )
+	if ( ptr->left )
 	{
-		n = show(ptr->right, n);
+		n = show(ptr->left, n);
 	}
 	n--;
 	return n;
@@ -270,6 +302,30 @@ int64_t d_show(Node *a)
 		show(a->left, 0);
 	if ( a->right )
 		show(a->right, 0);
+	return 1;
+}
+
+int64_t d_bypass(Node *a)
+{
+	int i;
+	Node *ptr = a;
+	while (ptr->left || ptr->right)
+	{
+		if ( ptr->left )
+		{
+			ptr = ptr->left;
+		}
+		else if ( ptr->right )
+		{
+			ptr = ptr->right;
+		}
+	}
+
+	while ( ptr )
+	{
+		printf("key = %"PRId64", info='%s'\n",ptr->key, ptr->info);
+		ptr = ptr->ptr;
+	}
 	return 1;
 }
 
@@ -297,7 +353,7 @@ int64_t delTable(Node *a)
 	return 0;
 }
 
-int64_t (*fptr[])(Node *) = {NULL, d_add, d_find, d_delete, d_show};
+int64_t (*fptr[])(Node *) = {NULL, d_add, d_find, d_delete, d_show, d_bypass};
 
 int dialog ( const char *msgs[], int argc)
 {
@@ -321,11 +377,42 @@ int dialog ( const char *msgs[], int argc)
 	return i;
 }
 
-int main()
+void file_input(Node *tree, char *file)
+{
+
+	FILE *fd = fopen(file, "r");
+	if ( !fd ) 
+		return;
+
+	char field[MAX_LEN];
+	uint64_t i;
+	int64_t key;
+	for ( i=0; fgets(field, MAX_LEN, fd); i++ )
+	{
+		//printf("-------\nfield = '%s'\n", field);
+		int64_t key = atoll(field);
+		//printf("key %"d64" from %s\n", key, field);
+		fgets(field, MAX_LEN, fd);
+		size_t len = strlen(field);
+		field[len-1] = 0;
+		//printf("key %"d64", info: '%s'\n", key, field);
+		char *buf = malloc ( len );
+		strlcpy(buf, field, len);
+		buf[len] = 0;
+		insert ( &(tree->left), key, buf );
+	}
+	printf("%"PRIu64" keys loaded from file %s\n", i, file);
+
+	fclose(fd);
+}
+
+int main(int argc, char **argv)
 {
 	Node a;
 	a.right=NULL;
 	a.left=NULL;
+	if ( argc > 1 )
+		file_input(&a, argv[1]);
 	int rc;
 	while ( (rc = dialog(msgs, NMsgs)) )
 		if ( fptr[rc])
