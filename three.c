@@ -177,7 +177,7 @@ Node *insert(Node **proot, int k, char *in)
 	Node *cur, *ptr;
 	size_t inl = strlen(in);
 	cur = (Node*)malloc(sizeof(Node));
-	cur->info = malloc(inl+1);
+	cur->info = (char*)malloc(inl+1);
 	if(!cur)
 		return NULL;
 	cur->key = k;
