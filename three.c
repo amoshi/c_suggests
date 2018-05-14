@@ -1,13 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <inttypes.h>
 #include <ctype.h>
 #define MAX_LEN 10000
 
 typedef struct Node
 {
-	int64_t key;
+	int key;
 	char *info;
 	struct Node *left;
 	struct Node *right;
@@ -17,14 +16,14 @@ typedef struct Node
 const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Bypass" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
-Node *search (Node *proot, int64_t key)
+Node *search (Node *proot, int key)
 {
 	Node *ptr = proot;
 	if (!proot)
 	{
 		return NULL;
 	}
-	printf("enter proot key %lld\n", proot->key);
+	printf("enter proot key %d\n", proot->key);
 
 	if(proot->key == key)
 		return proot;
@@ -33,7 +32,7 @@ Node *search (Node *proot, int64_t key)
 
 }
 
-Node* erase(Node *node, int64_t key)
+Node* erase(Node *node, int key)
 {
 	if(node == NULL)
 		return node;
@@ -118,15 +117,15 @@ void rev_normalize(Node *proot, Node *next, Node *par)
 	}
 	if ( proot->right && !flag )
 	{
-		printf("trying %"PRId64"\n", proot->key);
+		printf("trying %d\n", proot->key);
 		rev_normalize(proot->right, proot, proot);
 	}
 	else if (proot->right && flag )
 		rev_normalize(proot->right, par->left, proot);
 	if ( next )
-		printf("set thread for %"PRId64" to %"PRId64"\n", proot->key, next->key);
+		printf("set thread for %d to %d\n", proot->key, next->key);
 	else
-		printf("passing %"PRId64"\n", proot->key);
+		printf("passing %d\n", proot->key);
 	proot->ptr = next;
 }
 
@@ -145,7 +144,7 @@ void linker(Node *proot)
 			rptr = rptr->right;
 	}
 
-	printf("linker set %"PRId64" to %"PRId64"\n", ptr->key, rptr->key);
+	printf("linker set %d to %d\n", ptr->key, rptr->key);
 	ptr->ptr = rptr;
 }
 
@@ -167,13 +166,13 @@ void rrev_normalize(Node *proot, Node *next)
 		rev_normalize(proot->right, proot, proot);
 	}
 	if ( next )
-		printf("\tset thread for %"PRId64" to %"PRId64"\n", proot->key, next->key);
+		printf("\tset thread for %d to %d\n", proot->key, next->key);
 	else
-		printf("\tpassing %"PRId64"\n", proot->key);
+		printf("\tpassing %d\n", proot->key);
 	proot->ptr = next;
 }
 
-Node *insert(Node **proot, int64_t k, char *in)
+Node *insert(Node **proot, int k, char *in)
 {
 	Node *cur, *ptr;
 	size_t inl = strlen(in);
@@ -182,7 +181,8 @@ Node *insert(Node **proot, int64_t k, char *in)
 	if(!cur)
 		return NULL;
 	cur->key = k;
-	strlcpy(cur->info,in,inl);
+	strncpy(cur->info,in,inl);
+	cur->info[inl]=0;
 	cur->left = cur->right = NULL;
 	if(!(ptr = instree(proot, cur)))
 	{
@@ -199,7 +199,7 @@ Node *insert(Node **proot, int64_t k, char *in)
 }
 
 
-int64_t d_add(Node *a)
+int d_add(Node *a)
 {
 	char field[MAX_LEN];
 	field[0]='a';
@@ -208,16 +208,16 @@ int64_t d_add(Node *a)
 		printf("key: ");
 		fgets(field, MAX_LEN, stdin);
 	}
-	int64_t key = atoll(field);
+	int key = atoll(field);
 
-	//printf("key=%"PRId64"\n", key);
+	//printf("key=%d\n", key);
 	printf("info: ");
 	fgets(field, MAX_LEN, stdin);
 	//printf("info=%s\n", field);
 	insert(&(a->left), key, field);
 	return 1;
 }
-int64_t d_find(Node *a)
+int d_find(Node *a)
 {
 	Node *res = NULL;
 	char field[MAX_LEN];
@@ -227,7 +227,7 @@ int64_t d_find(Node *a)
 		printf("key: ");
 		fgets(field, MAX_LEN, stdin);
 	}
-	int64_t key = atoll(field);
+	int key = atoll(field);
 	
 	if ( a->left )
 		res = search(a->left, key);
@@ -235,12 +235,12 @@ int64_t d_find(Node *a)
 		res = search(a->right, key);
 	printf("\n\nResults:\n-------------\n");
 	if ( res )
-		printf("key: %"PRId64", info: '%s'\n", res->key, res->info);
+		printf("key: %d, info: '%s'\n", res->key, res->info);
 	printf("\n------\n\n");
 	
 	return 1;
 }
-int64_t d_delete(Node *a)
+int d_delete(Node *a)
 {
 	Node *temp = NULL;
 	char field[MAX_LEN];
@@ -250,7 +250,7 @@ int64_t d_delete(Node *a)
 		printf("key: ");
 		fgets(field, MAX_LEN, stdin);
 	}
-	int64_t key = atoll(field);
+	int key = atoll(field);
 	
 	if ( a->left )
 	{
@@ -272,7 +272,7 @@ int64_t d_delete(Node *a)
 	return 1;
 }
 
-int64_t show ( Node *ptr, int64_t n )
+int show ( Node *ptr, int n )
 {
 	n++;
 	if ( ptr->right )
@@ -281,12 +281,12 @@ int64_t show ( Node *ptr, int64_t n )
 	}
 	if ( ptr )
 	{
-		int64_t i;
+		int i;
 		for ( i=0; i<n; i++, printf("\t") );
 		if ( ptr->ptr )
-			printf("key: %"PRId64", info: '%s', ptr: %"PRId64"\n", ptr->key, ptr->info, ptr->ptr->key );
+			printf("key: %d, info: '%s', ptr: %d\n", ptr->key, ptr->info, ptr->ptr->key );
 		else
-			printf("key: %"PRId64", info: '%s'\n", ptr->key, ptr->info );
+			printf("key: %d, info: '%s'\n", ptr->key, ptr->info );
 	}
 	if ( ptr->left )
 	{
@@ -295,9 +295,9 @@ int64_t show ( Node *ptr, int64_t n )
 	n--;
 	return n;
 }
-int64_t d_show(Node *a)
+int d_show(Node *a)
 {
-	int64_t i;
+	int i;
 	if ( a->left )
 		show(a->left, 0);
 	if ( a->right )
@@ -305,7 +305,7 @@ int64_t d_show(Node *a)
 	return 1;
 }
 
-int64_t d_bypass(Node *a)
+int d_bypass(Node *a)
 {
 	int i;
 	Node *ptr = a;
@@ -323,7 +323,7 @@ int64_t d_bypass(Node *a)
 
 	while ( ptr )
 	{
-		printf("key = %"PRId64", info='%s'\n",ptr->key, ptr->info);
+		printf("key = %d, info='%s'\n",ptr->key, ptr->info);
 		ptr = ptr->ptr;
 	}
 	return 1;
@@ -336,7 +336,7 @@ void freetab(Node *proot)
 	{
 		return;
 	}
-	printf("deleting key from memory %lld\n", proot->key);
+	printf("deleting key from memory %d\n", proot->key);
 
 	freetab(proot->left);
 	freetab(proot->right);
@@ -344,7 +344,7 @@ void freetab(Node *proot)
 	free(proot);
 }
 
-int64_t delTable(Node *a)
+int delTable(Node *a)
 {
 	if ( a->left )
 		freetab(a->left);
@@ -353,11 +353,11 @@ int64_t delTable(Node *a)
 	return 0;
 }
 
-int64_t (*fptr[])(Node *) = {NULL, d_add, d_find, d_delete, d_show, d_bypass};
+int (*fptr[])(Node *) = {NULL, d_add, d_find, d_delete, d_show, d_bypass};
 
 int dialog ( const char *msgs[], int argc)
 {
-	int64_t i;
+	int i;
 	puts("============");
 	for ( i=0; i<argc; i++ )
 	{
@@ -385,23 +385,23 @@ void file_input(Node *tree, char *file)
 		return;
 
 	char field[MAX_LEN];
-	uint64_t i;
-	int64_t key;
+	unsigned int i;
+	int key;
 	for ( i=0; fgets(field, MAX_LEN, fd); i++ )
 	{
 		//printf("-------\nfield = '%s'\n", field);
-		int64_t key = atoll(field);
+		int key = atoll(field);
 		//printf("key %"d64" from %s\n", key, field);
 		fgets(field, MAX_LEN, fd);
 		size_t len = strlen(field);
 		field[len-1] = 0;
 		//printf("key %"d64", info: '%s'\n", key, field);
 		char *buf = malloc ( len );
-		strlcpy(buf, field, len);
+		strncpy(buf, field, len);
 		buf[len] = 0;
 		insert ( &(tree->left), key, buf );
 	}
-	printf("%"PRIu64" keys loaded from file %s\n", i, file);
+	printf("%u keys loaded from file %s\n", i, file);
 
 	fclose(fd);
 }
