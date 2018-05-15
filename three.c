@@ -111,7 +111,6 @@ void rev_normalize(Node *proot, Node *next, Node *par)
 	int flag = 0;
 	if ( proot->left )
 	{
-		puts("10");
 		if ( proot->right )
 			rev_normalize(proot->left, proot->right, proot);
 		else
@@ -124,7 +123,7 @@ void rev_normalize(Node *proot, Node *next, Node *par)
 	}
 	if ( proot->right && !flag )
 	{
-		printf("trying %d\n", proot->key);
+		//printf("trying %d\n", proot->key);
 		rev_normalize(proot->right, proot, proot);
 	}
 	else if (proot->right && flag )
@@ -171,10 +170,10 @@ void rrev_normalize(Node *proot, Node *next)
 	{
 		rev_normalize(proot->right, proot, proot);
 	}
-	if ( next )
-		printf("\tset thread for %d to %d\n", proot->key, next->key);
-	else
-		printf("\tpassing %d\n", proot->key);
+	//if ( next )
+	//	printf("\tset thread for %d to %d\n", proot->key, next->key);
+	//else
+	//	printf("\tpassing %d\n", proot->key);
 	proot->ptr = next;
 }
 
@@ -327,7 +326,7 @@ int d_bypass(Node *a)
 	return 1;
 }
 
-void rb_generate(Node *tree, int range, int count)
+void generate(Node *tree, int range, int count)
 {
 	int i;
 	time_t seconds;
@@ -342,7 +341,7 @@ void rb_generate(Node *tree, int range, int count)
 			rnd = rand() % range;
 			snprintf(buf, 2, "%d", rnd % 30);
 		}
-		while (insert(&tree, rnd, buf));
+		while (!insert(&tree, rnd, buf));
 	}
 }
 int d_gen(Node *tree)
@@ -367,7 +366,7 @@ int d_gen(Node *tree)
 		puts("error, count great than range");
 		return 1;
 	}
-	rb_generate(tree, range, count);
+	generate(tree, range, count);
 	
 	return 1;
 }
