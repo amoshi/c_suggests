@@ -30,6 +30,7 @@ typedef struct rb_node
 	int64_t key;
 	char *info;
 	struct rb_node *steam[2];
+	struct rb_node *parent;
 } rb_node;
 
 typedef struct rb_tree 
@@ -86,7 +87,7 @@ rb_node *rb_double ( rb_node *root, int dir )
 	return rb_single ( root, dir );
 }
 
-rb_node *make_node ( int64_t key, char *field )
+rb_node *make_node ( int64_t key, char *field, rb_node *parent )
 {
 	rb_node *rn = malloc ( sizeof *rn );
   
@@ -96,15 +97,18 @@ rb_node *make_node ( int64_t key, char *field )
 		rn->steam[LEFT] = NULL;
 		rn->steam[RIGHT] = NULL;
 		rn->info = field;
+		rn->parent = parent;
 	}
 	return rn;
 }
 
 int rb_insert ( rb_tree *tree, int64_t key, char *field )
 {
+	int excode = 1;
 	if ( tree->root == NULL )
 	{
-	        tree->root = make_node ( key, field );
+		tree->count ++ ;
+	        tree->root = make_node ( key, field, NULL );
 	        if ( tree->root == NULL )
 	       		return 0;
 	}
@@ -125,7 +129,7 @@ int rb_insert ( rb_tree *tree, int64_t key, char *field )
 			if ( q == NULL )
 			{
 				flag = 0;
-				p->steam[dir] = q = make_node ( key, field );
+				p->steam[dir] = q = make_node ( key, field, p );
 				tree->count ++ ;
 				if ( q == NULL )
 					return 0;
@@ -136,20 +140,24 @@ int rb_insert ( rb_tree *tree, int64_t key, char *field )
 				q->steam[LEFT]->color = BLACK;
 				q->steam[RIGHT]->color = BLACK;
 			}
+
 			if ( is_red ( q ) && is_red ( p ) ) 
 			{
+				//rb_node *p = q->parent;
 				int dir2 = t->steam[RIGHT] == g;
-	
 				if ( q == p->steam[last] )
-			       		t->steam[dir2] = rb_single ( g, !last );
+					t->steam[dir2] = rb_single ( g, !last );
 				else
-			       		t->steam[dir2] = rb_double ( g, !last );
+					t->steam[dir2] = rb_double ( g, !last );
 			}
 	
 			if ( q->key == key )
 			{
 				if ( flag )
+				{
+					excode=0;
 					printf("%"u64" already exists\n", key);
+				}
 				break;
 			}
 	
@@ -164,47 +172,45 @@ int rb_insert ( rb_tree *tree, int64_t key, char *field )
 		tree->root = head.steam[RIGHT];
 	}
 	tree->root->color = BLACK;
-	return 1;
+	return excode;
 }
 
 int rb_delete ( rb_tree *tree, int64_t key )
 {
 	if ( tree->root != NULL ) 
 	{
-		rb_node head = {0}; /* временный указатель на корень дерева */
-		rb_node *q, *p, *g; /* вспомогательные переменные */
-		rb_node *f = NULL;	/* узел, подлежащий удалению */
+		rb_node head = {0};
+		rb_node *q, *p, *g;
+		rb_node *f = NULL;
 		int dir = 1;
  
-		/* инициализация вспомогательных переменных */
 		q = &head;
 		g = p = NULL;
 		q->steam[RIGHT] = tree->root;
  
-		/* поиск и удаление */
 		while ( q->steam[dir] != NULL )
 		{
 			int last = dir;
  
-			/* сохранение иерархии узлов во временные переменные */
 			g = p, p = q;
 			q = q->steam[dir];
 			dir = q->key < key;
  
-			/* сохранение найденного узла */
 			if ( q->key == key )
 				f = q;
  
-			if ( !is_red ( q ) && !is_red ( q->steam[dir] ) ) {
+			if ( !is_red ( q ) && !is_red ( q->steam[dir] ) )
+			{
 				if ( is_red ( q->steam[!dir] ) )
 					p = p->steam[last] = rb_single ( q, dir );
-				else if ( !is_red ( q->steam[!dir] ) ) {
+				else if ( !is_red ( q->steam[!dir] ) )
+				{
 					rb_node *s = p->steam[!last];
- 
 
-					if ( s != NULL ) {
-						if ( !is_red ( s->steam[!last] ) && !is_red ( s->steam[last] ) ) {
-							/* смена цвета узлов */
+					if ( s != NULL )
+					{
+						if ( !is_red ( s->steam[!last] ) && !is_red ( s->steam[last] ) )
+						{
 							p->color = BLACK;
 							s->color = RED;
 							q->color = RED;
@@ -217,7 +223,6 @@ int rb_delete ( rb_tree *tree, int64_t key )
 							else if ( is_red ( s->steam[!last] ) )
 								g->steam[dir2] = rb_single ( p, last );
  
-							/* корректировка цвета узлов */
 							q->color = g->steam[dir2]->color = RED;
 							g->steam[dir2]->steam[LEFT]->color = BLACK;
 							g->steam[dir2]->steam[RIGHT]->color = BLACK;
@@ -227,8 +232,8 @@ int rb_delete ( rb_tree *tree, int64_t key )
 			}
 		}
  
-		/* удаление найденного узла */
-		if ( f != NULL ) {
+		if ( f != NULL )
+		{
 			f->key = q->key;
 			p->steam[p->steam[RIGHT] == q] =
 				q->steam[q->steam[LEFT] == NULL];
@@ -236,7 +241,6 @@ int rb_delete ( rb_tree *tree, int64_t key )
 			free ( q );
 		}
  
-		/* обновление указателя на корень дерева */
 		tree->root = head.steam[RIGHT];
 		if ( tree->root != NULL )
 			tree->root->color = BLACK;
@@ -247,7 +251,8 @@ int rb_delete ( rb_tree *tree, int64_t key )
 
 void tree_show(rb_node *x)
 {
-	printf("%"u64": '%s'\n",x->key, x->info);
+	char *color = x->color ? "red" : "black";
+	printf("%"u64": '%s' (%s)\n",x->key, x->info, color);
 	if ( x->steam[LEFT] )
 		tree_show(x->steam[LEFT]);
 	if ( x->steam[RIGHT] )
@@ -281,13 +286,14 @@ uint64_t tree_build(rb_node *x, uint64_t l)
 {
 	l++;
 
+	char *color = x->color ? "red" : "black";
 	if ( x->steam[LEFT] )
 		l = tree_build(x->steam[LEFT], l++);
 
 	uint64_t i;
 	for ( i=0; i<l; i++)
 		printf("\t");
-	printf("%"u64" (%s)\n",x->key, x->info);
+	printf("%"u64" (%s:%s)\n",x->key, x->info, color);
 
 	if ( x->steam[RIGHT] )
 		l = tree_build(x->steam[RIGHT], l++);
@@ -299,7 +305,7 @@ uint64_t tree_build(rb_node *x, uint64_t l)
 void rb_build ( rb_tree *tree )
 {
 	if ( tree && tree->root )
-		tree_build(tree->root, 0);
+		tree_build(tree->root, -1);
 }
 
 rb_tree* tree_get ( rb_node *x, int64_t key )
@@ -348,7 +354,7 @@ void rb_getmax(rb_tree *tree)
 	rb_node *x = tree->root;
 	while ( x )
 	{
-		printf("trying %"u64"\n", x->key);
+		//printf("trying %"u64"\n", x->key);
 		if ( x->steam[RIGHT] && x->steam[RIGHT]->key > x->key )
 			x = x->steam[RIGHT];
 		else if ( x->steam[LEFT] && x->steam[LEFT]->key > x->key )
@@ -361,7 +367,7 @@ void rb_getmax(rb_tree *tree)
 	}
 }
 
-const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Build tree", "6. Get max" };
+const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Build tree", "6. Get max", "7. Generate", "8. Get numbers of elements" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 int64_t d_add(rb_tree *tree)
@@ -384,6 +390,7 @@ int64_t d_add(rb_tree *tree)
 	buf[len] = 0;
 	r_time t1 = setrtime();
 	rb_insert ( tree, key, buf );
+	rb_build (tree);
 	r_time t2 = setrtime();
 	getrtime(t1, t2);
 	return 1;
@@ -424,7 +431,58 @@ int64_t d_delete(rb_tree *tree)
 	rb_delete(tree,key);
 	r_time t2 = setrtime();
 	getrtime(t1, t2);
+	return 1;
+}
+void rb_generate(rb_tree *tree, int64_t range, int64_t count)
+{
+	int64_t i;
+	time_t seconds;
+	time(&seconds);
+	srand((unsigned int) seconds);
+	for ( i=0; i<count; i++ )
+	{
+		char *buf = malloc(2);
+		int64_t rnd = rand() % range;
+		do
+		{
+			rnd = rand() % range;
+			snprintf(buf, 2, "%"d64"", rnd % 30);
+		}
+		while (!rb_insert(tree, rnd, buf));
+	}
+}
+int64_t d_gen(rb_tree *tree)
+{
+	char field[MAX_LEN];
+	field[0]='a';
+	while ( !isdigit(*field) )
+	{
+		printf("range for generate (0 to n): ");
+		fgets(field, MAX_LEN, stdin);
+	}
+	int64_t range = atoll(field);
+	field[0]=0;
+	while ( !isdigit(*field) )
+	{
+		printf("element count: ");
+		fgets(field, MAX_LEN, stdin);
+	}
+	int64_t count = atoll(field);
+	if ( count > range )
+	{
+		puts("error, count great than range");
+		return 1;
+	}
+	r_time t1 = setrtime();
+	rb_generate(tree, range, count);
+	r_time t2 = setrtime();
+	getrtime(t1, t2);
 	
+	return 1;
+}
+int64_t d_elem_count(rb_tree *tree)
+{
+	printf("count elements: %"d64"\n", tree->count);
 	return 1;
 }
 int64_t d_show(rb_tree *tree)
@@ -454,7 +512,7 @@ int64_t d_max(rb_tree *tree)
 	return 1;
 }
 
-int64_t (*fptr[])(rb_tree *) = {NULL, d_add, d_find, d_delete, d_show, d_build, d_max, NULL};
+int64_t (*fptr[])(rb_tree *) = {NULL, d_add, d_find, d_delete, d_show, d_build, d_max, d_gen, d_elem_count, NULL};
 
 int dialog ( const char *msgs[], int argc)
 {
@@ -522,10 +580,10 @@ int main(int argc, char **argv)
 	}
 
 	int rc;
-        while ( (rc = dialog(msgs, NMsgs)) )
-                if ( fptr[rc])
-                        if ( !fptr[rc](tree) )
-                                break;
-        printf("OK\n");
+	while ( (rc = dialog(msgs, NMsgs)) )
+		if ( fptr[rc])
+			if ( !fptr[rc](tree) )
+				break;
+	printf("OK\n");
 	rb_free(tree);
 }
