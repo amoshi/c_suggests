@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <time.h>
 #define MAX_LEN 10000
 
 typedef struct Node
@@ -13,8 +14,23 @@ typedef struct Node
 	struct Node *ptr;
 } Node;
 
-const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Bypass" };
+const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Bypass", "6. Generate" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
+
+int getInt (int *n)
+{
+	int k;
+	do
+	{
+		k = scanf("%d", n);
+		if (!k)
+		{
+			scanf ("%*c");
+		}
+	}
+	while (!k);
+	return k;
+}
 
 Node *search (Node *proot, int key)
 {
@@ -192,7 +208,6 @@ Node *insert(Node **proot, int k, char *in)
 	}
 	else
 	{
-		//cur->ptr = get_rev_next(*proot, cur->key);
 		rrev_normalize(proot[0], NULL);
 	}
 	return ptr;
@@ -210,10 +225,8 @@ int d_add(Node *a)
 	}
 	int key = atoll(field);
 
-	//printf("key=%d\n", key);
 	printf("info: ");
 	fgets(field, MAX_LEN, stdin);
-	//printf("info=%s\n", field);
 	insert(&(a->left), key, field);
 	return 1;
 }
@@ -262,12 +275,6 @@ int d_delete(Node *a)
 		a->right = erase(a->right, key);
 		temp = a->right;
 	}
-	//printf("\n\nResults:\n-------------\n");
-	//if ( temp )
-		//printf("delete key: success");
-	//else
-		//printf("delete key: no key");
-	//printf("\n------\n\n");
 	
 	return 1;
 }
@@ -329,6 +336,51 @@ int d_bypass(Node *a)
 	return 1;
 }
 
+void rb_generate(Node *tree, int64_t range, int64_t count)
+{
+	int64_t i;
+	time_t seconds;
+	time(&seconds);
+	srand((unsigned int) seconds);
+	for ( i=0; i<count; i++ )
+	{
+		char *buf = (char*)malloc(2);
+		int rnd = rand() % range;
+		do
+		{
+			rnd = rand() % range;
+			snprintf(buf, 2, "%d", rnd % 30);
+		}
+		while (insert(&tree, rnd, buf));
+	}
+}
+int d_gen(Node *tree)
+{
+	char field[MAX_LEN];
+	field[0]='a';
+	while ( !isdigit(*field) )
+	{
+		printf("range for generate (0 to n): ");
+		fgets(field, MAX_LEN, stdin);
+	}
+	int64_t range = atoll(field);
+	field[0]=0;
+	while ( !isdigit(*field) )
+	{
+		printf("element count: ");
+		fgets(field, MAX_LEN, stdin);
+	}
+	int64_t count = atoll(field);
+	if ( count > range )
+	{
+		puts("error, count great than range");
+		return 1;
+	}
+	rb_generate(tree, range, count);
+	
+	return 1;
+}
+
 void freetab(Node *proot)
 {
 	Node *ptr = proot;
@@ -353,7 +405,7 @@ int delTable(Node *a)
 	return 0;
 }
 
-int (*fptr[])(Node *) = {NULL, d_add, d_find, d_delete, d_show, d_bypass};
+int (*fptr[])(Node *) = {NULL, d_add, d_find, d_delete, d_show, d_bypass, d_gen};
 
 int dialog ( const char *msgs[], int argc)
 {
@@ -389,13 +441,10 @@ void file_input(Node *tree, char *file)
 	int key;
 	for ( i=0; fgets(field, MAX_LEN, fd); i++ )
 	{
-		//printf("-------\nfield = '%s'\n", field);
 		int key = atoll(field);
-		//printf("key %"d64" from %s\n", key, field);
 		fgets(field, MAX_LEN, fd);
 		size_t len = strlen(field);
 		field[len-1] = 0;
-		//printf("key %"d64", info: '%s'\n", key, field);
 		char *buf = (char*)malloc ( len );
 		strncpy(buf, field, len);
 		buf[len] = 0;
