@@ -336,9 +336,9 @@ int d_bypass(Node *a)
 	return 1;
 }
 
-void rb_generate(Node *tree, int64_t range, int64_t count)
+void rb_generate(Node *tree, int range, int count)
 {
-	int64_t i;
+	int i;
 	time_t seconds;
 	time(&seconds);
 	srand((unsigned int) seconds);
@@ -363,14 +363,14 @@ int d_gen(Node *tree)
 		printf("range for generate (0 to n): ");
 		fgets(field, MAX_LEN, stdin);
 	}
-	int64_t range = atoll(field);
+	int range = atoll(field);
 	field[0]=0;
 	while ( !isdigit(*field) )
 	{
 		printf("element count: ");
 		fgets(field, MAX_LEN, stdin);
 	}
-	int64_t count = atoll(field);
+	int count = atoll(field);
 	if ( count > range )
 	{
 		puts("error, count great than range");
