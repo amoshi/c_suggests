@@ -7,31 +7,17 @@
 
 typedef struct Node
 {
-	int key;
-	char *info;
-	struct Node *left;
-	struct Node *right;
-	struct Node *ptr;
+	int key; // ключ
+	char *info; // информация
+	struct Node *left; // левая ветка
+	struct Node *right; // правая ветка
+	struct Node *ptr; // нить
 } Node;
 
 const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Bypass", "6. Generate" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
-int getInt (int *n)
-{
-	int k;
-	do
-	{
-		k = scanf("%d", n);
-		if (!k)
-		{
-			scanf ("%*c");
-		}
-	}
-	while (!k);
-	return k;
-}
-
+// рекурсивный поиск элемента
 Node *search (Node *proot, int key)
 {
 	Node *ptr = proot;
@@ -48,19 +34,23 @@ Node *search (Node *proot, int key)
 
 }
 
+// поиск и удаление элемента по ключу
 Node* erase(Node *node, int key)
 {
+	// пустой элемент - завершить функцию, вернуть NULL
 	if(node == NULL)
 		return node;
  
-	if(key == node->key){
+	if(key == node->key)
+	{
 		Node* tmp;
+		// если есть только левый дочерний элемент - ставим его вместо удаляемого
 		if(node->right == NULL)
 			tmp = node->left;
 		else
 		{
- 
 			Node* ptr = node->right;
+			// если есть только правый дочерний элемент - ставим его вместо удаляемого
 			if(ptr->left == NULL)
 			{
 				ptr->left = node->left;
@@ -68,13 +58,15 @@ Node* erase(Node *node, int key)
 			}
 			else
 			{
- 
+				// проходим по левым элементам рекурсивно по дереву, пока не упремся в NULL
 				Node* pmin = ptr->left;
 				while(pmin->left != NULL)
 				{
 					ptr  = pmin;
 					pmin = ptr->left;
 				}
+
+				// левому крылу удаляемого элемента присваиваем правый узел конечного элемента, а левый и правый узел удаляемого элемента переводим в левый и првый элемент конечного элемента левого поддерева
 				ptr->left   = pmin->right;
 				pmin->left  = node->left;
 				pmin->right = node->right;
@@ -82,10 +74,12 @@ Node* erase(Node *node, int key)
 			}
 		}
  
+		// высвобождаем память
 		free(node->info);
 		free(node);
 		return tmp;
 	}
+	// рекурсивный обход дерева до нахождения удаляемого элемента
 	else if (key < node->key)
 		node->left  = erase(node->left, key);
 	else
@@ -93,11 +87,7 @@ Node* erase(Node *node, int key)
 	return node;
 }
 
-Node *get_rev_next(Node *proot)
-{
-	return NULL;
-}
-
+// рекурсивная функция вставки
 Node *instree (Node **proot, Node *newnode)
 {
 	Node **ptr = proot;
@@ -114,6 +104,7 @@ Node *instree (Node **proot, Node *newnode)
 
 }
 
+// функция нормализации обратной прошивки
 void rev_normalize(Node *proot, Node *next, Node *par)
 {
 	Node *left = NULL;
@@ -138,13 +129,14 @@ void rev_normalize(Node *proot, Node *next, Node *par)
 	}
 	else if (proot->right && flag )
 		rev_normalize(proot->right, par->left, proot);
-	if ( next )
-		printf("set thread for %d to %d\n", proot->key, next->key);
-	else
-		printf("passing %d\n", proot->key);
+	//if ( next )
+		//printf("set thread for %d to %d\n", proot->key, next->key);
+	//else
+	//	printf("passing %d\n", proot->key);
 	proot->ptr = next;
 }
 
+// установка связей между левым и правым деревом от корня
 void linker(Node *proot)
 {
 	if (!proot || !(proot->left) || !(proot->right) )
@@ -164,21 +156,19 @@ void linker(Node *proot)
 	ptr->ptr = rptr;
 }
 
+// fixup threads tree
 void rrev_normalize(Node *proot, Node *next)
 {
 	if ( proot->left )
 	{
-		puts("1");
 		if ( proot->right )
 			rev_normalize(proot->left, proot->right, proot);
 		else
 			rev_normalize(proot->left, proot, proot);
 	}
-	linker(proot);
+	linker(proot); // установка связей левого и правого поддерева от корня
 	if ( proot->right )
 	{
-		puts("1");
-		
 		rev_normalize(proot->right, proot, proot);
 	}
 	if ( next )
@@ -188,19 +178,20 @@ void rrev_normalize(Node *proot, Node *next)
 	proot->ptr = next;
 }
 
+// функция вставки в дерево
 Node *insert(Node **proot, int k, char *in)
 {
 	Node *cur, *ptr;
-	size_t inl = strlen(in);
-	cur = (Node*)malloc(sizeof(Node));
-	cur->info = (char*)malloc(inl+1);
+	size_t inl = strlen(in); // length info
+	cur = (Node*)malloc(sizeof(Node));	// allocate node
+	cur->info = (char*)malloc(inl+1);	// allocate info
 	if(!cur)
 		return NULL;
-	cur->key = k;
-	strncpy(cur->info,in,inl);
-	cur->info[inl]=0;
-	cur->left = cur->right = NULL;
-	if(!(ptr = instree(proot, cur)))
+	cur->key = k;				// set key
+	strncpy(cur->info,in,inl);		// copy info to node
+	cur->info[inl]='\0';
+	cur->left = cur->right = NULL;		// set leaf
+	if(!(ptr = instree(proot, cur)))	// worker insert to tree
 	{
 		puts("this key already in used");
 		free(cur->info);
@@ -208,7 +199,7 @@ Node *insert(Node **proot, int k, char *in)
 	}
 	else
 	{
-		rrev_normalize(proot[0], NULL);
+		rrev_normalize(proot[0], NULL);	// set threads
 	}
 	return ptr;
 }
