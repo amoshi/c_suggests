@@ -15,7 +15,7 @@ typedef struct Node
 	struct Node *next;
 } Node;
 
-const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Generate" };
+const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 // рекурсивный поиск элемента
@@ -290,51 +290,6 @@ int d_show(Node **node)
 	return 1;
 }
 
-void generate(Node **tree, int range, int count)
-{
-	int i;
-	time_t seconds;
-	time(&seconds);
-	srand((unsigned int) seconds);
-	for ( i=0; i<count; i++ )
-	{
-		char *buf = (char*)malloc(2);
-		int rnd = rand() % range;
-		do
-		{
-			rnd = rand() % range;
-			snprintf(buf, 2, "%d", rnd % 30);
-		}
-		while (!insert(tree, rnd, buf));
-	}
-}
-int d_gen(Node **tree)
-{
-	char field[MAX_LEN];
-	field[0]='a';
-	while ( !isdigit(*field) )
-	{
-		printf("range for generate (0 to n): ");
-		fgets(field, MAX_LEN, stdin);
-	}
-	int range = atoll(field);
-	field[0]=0;
-	while ( !isdigit(*field) )
-	{
-		printf("element count: ");
-		fgets(field, MAX_LEN, stdin);
-	}
-	int count = atoll(field);
-	if ( count > range )
-	{
-		puts("error, count great than range");
-		return 1;
-	}
-	generate(tree, range, count);
-	
-	return 1;
-}
-
 void freetab(Node *proot)
 {
 	if (!proot)
@@ -365,7 +320,7 @@ int delTable(Node *a)
 	return 0;
 }
 
-int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show, d_gen};
+int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show};
 
 int dialog ( const char *msgs[], int argc)
 {
