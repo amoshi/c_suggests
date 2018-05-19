@@ -42,9 +42,9 @@ Node* erase(Node *node, int key, int release)
 	if(node == NULL)
 		return node;
  
-	if(key == node->key && release == 0)
+	//if(key == node->key && release == 0 )
+	if(key == node->key && release == 0 && !(node->next) )
 	{
-
 		Node* tmp;
 		// если есть только левый дочерний элемент - ставим его вместо удаляемого
 		if(node->right == NULL)
@@ -80,6 +80,16 @@ Node* erase(Node *node, int key, int release)
 		free(node->info);
 		free(node);
 		return tmp;
+	}
+	else if (key == node->key && release == 0 && node->next)
+	{
+		Node *cur = node->next;
+		free(node->info);
+		node->info = node->next->info;
+		node->release = node->next->release;
+		node->next = node->next->next;
+		free(cur);
+		return node;
 	}
 	else if (key == node->key && release > 0)
 	{
@@ -223,52 +233,60 @@ int d_delete(Node **node)
 	}
 	int key = atoll(field);
 
-	field[0]='a';
-	while ( !isdigit(*field) )
+	int release = 0;
+	Node *res = search(a, key);
+	if ( res->next )
 	{
-		printf("release: ");
-		fgets(field, MAX_LEN, stdin);
+		field[0]='a';
+		while ( !isdigit(*field) )
+		{
+			printf("release: ");
+			fgets(field, MAX_LEN, stdin);
+		}
+		release = atoll(field);
 	}
-	int release = atoll(field);
 	
 	erase(a,key,release);
 	
 	return 1;
 }
 
-int show ( Node *ptr, int n )
+void show ( Node *ptr, int key )
 {
-	n++;
 	if ( !ptr )
-		return 0;
+		return;
 	if ( ptr->right )
 	{
-		n = show(ptr->right, n);
+		show(ptr->right, key);
 	}
-	if ( ptr )
+	if ( ptr && ptr->key < key )
 	{
 		int i;
-		for ( i=0; i<n; i++, printf("\t") );
 		Node *cur = ptr;
 		while ( cur )
 		{
-			printf("key: %d, info: '%s' release: %d\t| ", cur->key, cur->info, cur->release);
+			printf("key: %d, info: '%s' release: %d\n", cur->key, cur->info, cur->release);
 			cur = cur->next;
 		}
-		puts("");
 	}
 	if ( ptr->left )
 	{
-		n = show(ptr->left, n);
+		show(ptr->left, key);
 	}
-	n--;
-	return n;
 }
 int d_show(Node **node)
 {
 	Node *a = *node;
-	int i;
-	show(a,-1);
+	int key;
+	char field[MAX_LEN];
+	field[0]='a';
+	while ( !isdigit(*field) )
+	{
+		printf("max key: ");
+		fgets(field, MAX_LEN, stdin);
+	}
+	key = atoll(field);
+	show(a, key);
 	return 1;
 }
 
