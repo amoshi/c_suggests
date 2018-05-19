@@ -14,7 +14,62 @@ typedef struct Node
 	struct Node *ptr; // нить
 } Node;
 
-const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Bypass", "6. Generate" };
+typedef struct snode
+{
+	Node *ptr;
+	struct snode *next;
+	struct snode *prev;
+} snode;
+
+typedef struct shead
+{
+	snode *start;
+	snode *end;
+} shead;
+
+void spush(shead *stack, Node *ptr)
+{
+	if ( stack->start == NULL )
+	{
+		stack->start = (snode*)calloc(sizeof(snode),1);
+		stack->start->next = NULL;
+		stack->start->prev = NULL;
+		stack->start->ptr = ptr;
+		stack->end = stack->start;
+	}
+	else
+	{
+		stack->end->next = (snode*)calloc(sizeof(snode),1);
+		stack->end->next->next = NULL;
+		stack->end->next->prev = stack->end;
+		stack->end = stack->end->next;
+		stack->end->ptr = ptr;
+	}
+}
+
+Node* spop(shead *stack)
+{
+	if ( !stack || !(stack->start) )
+	{
+		return NULL;
+	}
+	if ( !(stack->end->prev) )
+	{
+		Node *ptr = stack->start->ptr;
+		free(stack->start);
+		stack->start = stack->end = NULL;
+		return ptr;
+	}
+	Node *ptr = stack->end->ptr;
+	snode *stnode = stack->end;
+	stack->end = stnode->prev;
+	stack->end->next = NULL;
+
+	free(stnode);
+	return ptr;
+}
+
+const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Bypass", "6. Generate", "7. Smartdelete" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 // рекурсивный поиск элемента
@@ -97,52 +152,90 @@ Node *instree (Node **proot, Node *newnode)
 	}
 
 	if((*proot)->key == newnode->key)
+	{
 		return NULL;
+	}
 	ptr = (newnode->key < (*proot)->key) ?  &(*proot)->left : &(*proot)->right;
-	
 	return instree(ptr, newnode);
 
 }
 
-// функция нормализации обратной прошивки
 void rev_normalize(Node *proot, Node *next, Node *par)
 {
-	Node *left = NULL;
-	int flag = 0;
-	if ( proot->left )
-	{
-		if ( proot->right )
-			rev_normalize(proot->left, proot->right, proot);
-		else
-			rev_normalize(proot->left, proot, proot);
-	}
-	else if ( proot->right )
-	{
-		left = proot->left;
-		flag = 1;
-	}
-	if ( proot->right && !flag )
-	{
-		//printf("trying %d\n", proot->key);
-		rev_normalize(proot->right, proot, proot);
-	}
-	else if (proot->right && flag )
-		rev_normalize(proot->right, par->left, proot);
-	//if ( next )
-		//printf("set thread for %d to %d\n", proot->key, next->key);
-	//else
-	//	printf("passing %d\n", proot->key);
-	proot->ptr = next;
+	//Node *ptr = proot;
+	//while ( ptr->left || ptr->right )
+	//{
+	//	if ( ptr->left )
+	//		rev_normalize(ptr->left, ptr, ptr);
+	//	else if ( ptr->right )
+	//		rev_normalize(ptr->right, ptr, ptr);
+	//}
+	//if ( ptr->left && ptr->right )
+	//	rev_normalize(ptr->left, ptr->right, ptr);
+	//if ( ptr->left && !(ptr->right) )
+	//	rev_normalize(ptr->left, ptr, ptr);
+	//else if ( ptr->right )
+	//	rev_normalize(ptr->right, ptr, ptr);
+	//ptr->ptr = next;
 }
 
-// установка связей между левым и правым деревом от корня
-void linker(Node *proot)
-{
-	if (!proot || !(proot->left) || !(proot->right) )
-		return;
-	Node *ptr = proot->left;
+// функция нормализации обратной прошивки
+//void rev_normalize(Node *proot, Node *next, Node *par)
+//{
+//	Node *left = NULL;
+//	int flag = 0;
+//	if ( proot->left )
+//	{
+//		if ( proot->right )
+//			rev_normalize(proot->left, proot->right, proot);
+//		else
+//			rev_normalize(proot->left, proot, proot);
+//	}
+//	else if ( proot->right )
+//	{
+//		left = proot->left;
+//		flag = 1;
+//	}
+//	if ( proot->right && !flag )
+//	{
+//		//printf("trying %d\n", proot->key);
+//		rev_normalize(proot->right, proot, proot);
+//	}
+//	else if (proot->right && flag )
+//		rev_normalize(proot->right, par->left, proot);
+//	if ( next )
+//		printf("set thread for %d to %d\n", proot->key, next->key);
+//	else
+//		printf("passing %d\n", proot->key);
+//	proot->ptr = next;
+//}
+//
+//// установка связей между левым и правым деревом от корня
+//void linker(Node *proot)
+//{
+//	if (!proot || !(proot->left) || !(proot->right) )
+//		return;
+//	Node *ptr = proot->left;
+//
+//	Node *rptr = proot->right;
+//	while ( (rptr->right) || (rptr->left) )
+//	{
+//		if (rptr->left)
+//			rptr = rptr->left;
+//		else if (rptr->right)
+//			rptr = rptr->right;
+//	}
+//
+//	printf("linker set %d to %d\n", ptr->key, rptr->key);
+//	ptr->ptr = rptr;
+//}
+//
+//// fixup threads tree
 
-	Node *rptr = proot->right;
+Node *todown (Node *rptr)
+{
+	if ( !rptr )
+		return rptr;
 	while ( (rptr->right) || (rptr->left) )
 	{
 		if (rptr->left)
@@ -150,38 +243,31 @@ void linker(Node *proot)
 		else if (rptr->right)
 			rptr = rptr->right;
 	}
-
-	printf("linker set %d to %d\n", ptr->key, rptr->key);
-	ptr->ptr = rptr;
+	return rptr;
 }
 
-// fixup threads tree
-void rrev_normalize(Node *proot, Node *next)
+void post_order(Node *root, shead *stack)
 {
-	if ( proot->left )
+	if ( root )
 	{
-		if ( proot->right )
-			rev_normalize(proot->left, proot->right, proot);
-		else
-			rev_normalize(proot->left, proot, proot);
+		post_order(root->left, stack);
+		post_order(root->right, stack);
+		Node *prev  = spop(stack);
+		if ( prev )
+			prev->ptr = root;
+		spush(stack, root);
+		//printf(":%d:", root->key);
+		//if ( root->ptr )
+		//	printf(":%d:", root->ptr->key);
+		//puts("");
 	}
-	linker(proot); // установка связей левого и правого поддерева от корня
-	if ( proot->right )
-	{
-		rev_normalize(proot->right, proot, proot);
-	}
-	//if ( next )
-	//	printf("\tset thread for %d to %d\n", proot->key, next->key);
-	//else
-	//	printf("\tpassing %d\n", proot->key);
-	proot->ptr = next;
 }
 
 // функция вставки в дерево
 Node *insert(Node **proot, int k, char *in)
 {
 	Node *cur, *ptr;
-	size_t inl = strlen(in); // length info
+	size_t inl = strlen(in);		// length info
 	cur = (Node*)malloc(sizeof(Node));	// allocate node
 	cur->info = (char*)malloc(inl+1);	// allocate info
 	if(!cur)
@@ -190,21 +276,28 @@ Node *insert(Node **proot, int k, char *in)
 	strncpy(cur->info,in,inl);		// copy info to node
 	cur->info[inl]='\0';
 	cur->left = cur->right = NULL;		// set leaf
+	cur->ptr = NULL;
+	if (!(proot[0]))
+	{
+		proot[0] = cur;
+		return cur;
+	}
 	if(!(ptr = instree(proot, cur)))	// worker insert to tree
 	{
-		puts("this key already in used");
 		free(cur->info);
 		free(cur);
 	}
 	else
 	{
-		rrev_normalize(proot[0], NULL);	// set threads
+		shead *stack = calloc(sizeof(shead),1);
+		post_order(proot[0], stack);
+		free(stack);
 	}
 	return ptr;
 }
 
 
-int d_add(Node *a)
+int d_add(Node **a)
 {
 	char field[MAX_LEN];
 	field[0]='a';
@@ -217,11 +310,13 @@ int d_add(Node *a)
 
 	printf("info: ");
 	fgets(field, MAX_LEN, stdin);
-	insert(&(a->left), key, field);
+	field[strlen(field)-1]=0;
+	insert(a, key, field);
 	return 1;
 }
-int d_find(Node *a)
+int d_find(Node **node)
 {
+	Node *a = *node;
 	Node *res = NULL;
 	char field[MAX_LEN];
 	field[0]='a';
@@ -243,8 +338,9 @@ int d_find(Node *a)
 	
 	return 1;
 }
-int d_delete(Node *a)
+int d_delete(Node **node)
 {
+	Node *a = *node;
 	Node *temp = NULL;
 	char field[MAX_LEN];
 	field[0]='a';
@@ -272,6 +368,8 @@ int d_delete(Node *a)
 int show ( Node *ptr, int n )
 {
 	n++;
+	if ( !ptr )
+		return 0;
 	if ( ptr->right )
 	{
 		n = show(ptr->right, n);
@@ -292,19 +390,24 @@ int show ( Node *ptr, int n )
 	n--;
 	return n;
 }
-int d_show(Node *a)
+int d_show(Node **node)
 {
+	Node *a = *node;
 	int i;
-	if ( a->left )
-		show(a->left, 0);
-	if ( a->right )
-		show(a->right, 0);
+	//if ( a->left )
+	//	show(a->left, 0);
+	//if ( a->right )
+	//	show(a->right, 0);
+	show(a,-1);
 	return 1;
 }
 
-int d_bypass(Node *a)
+int d_bypass(Node **node)
 {
+	Node *a = *node;
 	int i;
+	if ( !a )
+		return 1;
 	Node *ptr = a;
 	while (ptr->left || ptr->right)
 	{
@@ -320,13 +423,71 @@ int d_bypass(Node *a)
 
 	while ( ptr )
 	{
-		printf("key = %d, info='%s'\n",ptr->key, ptr->info);
+		printf("debug (%p) key = %d, info='%s'\n", ptr, ptr->key, ptr->info);
 		ptr = ptr->ptr;
 	}
+
 	return 1;
 }
 
-void generate(Node *tree, int range, int count)
+int smartdelete(Node *a, int key)
+{
+	int i;
+	Node *ptr = a;
+	Node *pp = NULL;
+	Node *p = NULL;
+	while (ptr->left || ptr->right)
+	{
+		//printf ("1 key %d\n", ptr->key);
+		if ( ptr->left )
+		{
+			ptr = ptr->left;
+		}
+		else if ( ptr->right )
+		{
+			ptr = ptr->right;
+		}
+	}
+
+	while ( ptr && ptr->key != key )
+	{
+		//printf ("2 key %d\n", ptr->key);
+		pp = p;
+		p = ptr;
+		ptr = ptr->ptr;
+	}
+
+	if ( p )
+	{
+		printf("key = %d, info='%s'\n",p->key, p->info);
+		erase(a, p->key);
+	}
+	if ( pp )
+	{
+		printf("key = %d, info='%s'\n",pp->key, pp->info);
+		erase(a, pp->key);
+	}
+
+	if (ptr->ptr && ptr->ptr->ptr )
+	{
+		printf("key = %d, info='%s'\n",ptr->ptr->ptr->key, ptr->ptr->ptr->info);
+		erase(a, ptr->ptr->ptr->key);
+	}
+	if ( ptr->ptr )
+	{
+		printf("key = %d, info='%s'\n",ptr->ptr->key, ptr->ptr->info);
+		erase(a, ptr->ptr->key);
+	}
+
+	puts("===============");
+	puts("noramlize");
+	shead *stack = calloc(sizeof(shead),1);
+	post_order(a, stack);
+	free(stack);
+	return 1;
+}
+
+void generate(Node **tree, int range, int count)
 {
 	int i;
 	time_t seconds;
@@ -341,10 +502,10 @@ void generate(Node *tree, int range, int count)
 			rnd = rand() % range;
 			snprintf(buf, 2, "%d", rnd % 30);
 		}
-		while (!insert(&tree, rnd, buf));
+		while (!insert(tree, rnd, buf));
 	}
 }
-int d_gen(Node *tree)
+int d_gen(Node **tree)
 {
 	char field[MAX_LEN];
 	field[0]='a';
@@ -371,6 +532,25 @@ int d_gen(Node *tree)
 	return 1;
 }
 
+int d_smartdelete(Node **node)
+{
+	Node *a = *node;
+	Node *res = NULL;
+	char field[MAX_LEN];
+	field[0]='a';
+	while ( !isdigit(*field) )
+	{
+		printf("key: ");
+		fgets(field, MAX_LEN, stdin);
+	}
+	int key = atoll(field);
+	
+	smartdelete(a, key);
+	printf("\n------\n\n");
+	
+	return 1;
+}
+
 void freetab(Node *proot)
 {
 	Node *ptr = proot;
@@ -388,14 +568,16 @@ void freetab(Node *proot)
 
 int delTable(Node *a)
 {
-	if ( a->left )
-		freetab(a->left);
-	if ( a->right )
-		freetab(a->right);
+	//if ( a->left )
+	//	freetab(a->left);
+	//if ( a->right )
+	//	freetab(a->right);
+	if (a)
+		freetab(a);
 	return 0;
 }
 
-int (*fptr[])(Node *) = {NULL, d_add, d_find, d_delete, d_show, d_bypass, d_gen};
+int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show, d_bypass, d_gen, d_smartdelete};
 
 int dialog ( const char *msgs[], int argc)
 {
@@ -419,7 +601,7 @@ int dialog ( const char *msgs[], int argc)
 	return i;
 }
 
-void file_input(Node *tree, char *file)
+void file_input(Node **tree, char *file)
 {
 
 	FILE *fd = fopen(file, "r");
@@ -438,7 +620,7 @@ void file_input(Node *tree, char *file)
 		char *buf = (char*)malloc ( len );
 		strncpy(buf, field, len);
 		buf[len] = 0;
-		insert ( &(tree->left), key, buf );
+		insert ( tree, key, buf );
 	}
 	printf("%u keys loaded from file %s\n", i, file);
 
@@ -447,9 +629,9 @@ void file_input(Node *tree, char *file)
 
 int main(int argc, char **argv)
 {
-	Node a;
-	a.right=NULL;
-	a.left=NULL;
+	Node *a = NULL;
+	//a.right=NULL;
+	//a.left=NULL;
 	if ( argc > 1 )
 		file_input(&a, argv[1]);
 	int rc;
@@ -458,5 +640,5 @@ int main(int argc, char **argv)
 			if ( !fptr[rc](&a) )
 				break;
 	printf("OK\n");
-	delTable(&a);
+	delTable(a);
 }
