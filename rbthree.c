@@ -5,21 +5,11 @@
 #include <time.h>
 #include <sys/time.h>
 
-#ifdef __MACH__
-#include <mach/clock.h>
-#include <mach/mach.h>
-#endif
 #define MAX_LEN	100000
 #define	RED	1
 #define	BLACK	0
 #define	RIGHT	1
 #define	LEFT	0
-
-typedef struct r_time
-{
-	int sec;
-	int nsec;
-} r_time;
 
 typedef struct rb_node 
 {
@@ -102,35 +92,11 @@ void post_order(rb_node *root, shead *stack)
 		if ( prev )
 			prev->ptr = root;
 		spush(stack, root);
-		printf(":%d:", root->key);
-		if ( root->ptr )
-			printf(":%d:", root->ptr->key);
-		puts("");
+		//printf(":%d:", root->key);
+		//if ( root->ptr )
+		//	printf(":%d:", root->ptr->key);
+		//puts("");
 	}
-}
-
-r_time setrtime()
-{
-#ifdef __MACH__
-	clock_serv_t cclock;
-	mach_timespec_t timer1;
-	host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
-	clock_get_time(cclock, &timer1);
-	mach_port_deallocate(mach_task_self(), cclock);
-
-#else
-	struct timespec timer1;
-	clock_gettime(CLOCK_REALTIME, &timer1);
-#endif
-	r_time rt;
-	rt.sec=timer1.tv_sec;
-	rt.nsec=timer1.tv_nsec;
-	return rt;
-}
-
-void getrtime(r_time t1, r_time t2)
-{
-	printf("complete for: %u.%09d sec\n",t2.sec-t1.sec,t2.nsec-t1.nsec);
 }
 
 int is_red ( rb_node *node )
@@ -449,11 +415,8 @@ int d_add(rb_tree *tree)
 	char *buf = malloc ( len );
 	strlcpy(buf, field, len);
 	buf[len] = 0;
-	r_time t1 = setrtime();
 	rb_insert ( tree, key, buf );
 	rb_build (tree);
-	r_time t2 = setrtime();
-	getrtime(t1, t2);
 	return 1;
 }
 int d_find(rb_tree *tree)
@@ -467,10 +430,7 @@ int d_find(rb_tree *tree)
 	}
 	int key = atoll(field);
 	
-	r_time t1 = setrtime();
 	rb_node *res = rb_find ( tree, key );
-	r_time t2 = setrtime();
-	getrtime(t1, t2);
 	printf("\n\nResults:\n-------------\n");
 	if ( res )
 		printf("key: %d, info: '%s'\n", res->key, res->info);
@@ -488,10 +448,7 @@ int d_delete(rb_tree *tree)
 		fgets(field, MAX_LEN, stdin);
 	}
 	int key = atoll(field);
-	r_time t1 = setrtime();
 	rb_delete(tree,key);
-	r_time t2 = setrtime();
-	getrtime(t1, t2);
 	return 1;
 }
 void rb_generate(rb_tree *tree, int range, int count)
@@ -534,28 +491,19 @@ int d_gen(rb_tree *tree)
 		puts("error, count great than range");
 		return 1;
 	}
-	r_time t1 = setrtime();
 	rb_generate(tree, range, count);
-	r_time t2 = setrtime();
-	getrtime(t1, t2);
 	
 	return 1;
 }
 int d_show(rb_tree *tree)
 {
-	r_time t1 = setrtime();
 	rb_show(tree);
-	r_time t2 = setrtime();
-	getrtime(t1, t2);
 	return 1;
 }
 
 int d_build(rb_tree *tree)
 {
-	r_time t1 = setrtime();
 	rb_build(tree);
-	r_time t2 = setrtime();
-	getrtime(t1, t2);
 	return 1;
 }
 
@@ -692,7 +640,6 @@ int dialog ( const char *msgs[], int argc)
 void file_input(rb_tree *tree, char *file)
 {
 
-	r_time t1 = setrtime();
 
 	FILE *fd = fopen(file, "r");
 	if ( !fd ) 
@@ -717,8 +664,6 @@ void file_input(rb_tree *tree, char *file)
 	}
 	printf("%u keys loaded from file %s\n", i, file);
 
-	r_time t2 = setrtime();
-	getrtime(t1, t2);
 	fclose(fd);
 }
 
