@@ -15,7 +15,7 @@ typedef struct Node
 	struct Node *next;
 } Node;
 
-const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show" };
+const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Min", "6. Reverse", "7. Direct", "8. Circle"  };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 // рекурсивный поиск элемента
@@ -251,6 +251,22 @@ int d_delete(Node **node)
 	return 1;
 }
 
+void rb_getmin(Node *x)
+{
+	while ( x )
+	{
+		if ( x->left && x->left->key < x->key )
+			x = x->left;
+		else if ( x->right && x->right->key < x->key )
+			x = x->right;
+		else
+		{
+			printf("min: %d\n", x->key);
+			return;
+		}
+	}
+}
+
 void show ( Node *ptr, int key )
 {
 	if ( !ptr )
@@ -290,6 +306,81 @@ int d_show(Node **node)
 	return 1;
 }
 
+void rev_show ( Node *ptr )
+{
+	if ( !ptr )
+		return;
+	rev_show(ptr->left);
+	rev_show(ptr->right);
+
+	Node *cur = ptr;
+	while ( cur )
+	{
+		printf("key: %d, info: '%s' release: %d\n", cur->key, cur->info, cur->release);
+		cur = cur->next;
+	}
+}
+int d_rev_show(Node **node)
+{
+	Node *a = *node;
+	rev_show(a);
+	return 1;
+}
+
+void direct_show ( Node *ptr )
+{
+	if ( !ptr )
+		return;
+
+	Node *cur = ptr;
+	while ( cur )
+	{
+		printf("key: %d, info: '%s' release: %d\n", cur->key, cur->info, cur->release);
+		cur = cur->next;
+	}
+
+	direct_show(ptr->left);
+	direct_show(ptr->right);
+
+}
+int d_direct_show(Node **node)
+{
+	Node *a = *node;
+	direct_show(a);
+	return 1;
+}
+
+void centre_show ( Node *ptr )
+{
+	if ( !ptr )
+		return;
+
+
+	centre_show(ptr->left);
+
+	Node *cur = ptr;
+	while ( cur )
+	{
+		printf("key: %d, info: '%s' release: %d\n", cur->key, cur->info, cur->release);
+		cur = cur->next;
+	}
+
+	centre_show(ptr->right);
+
+}
+int d_centre_show(Node **node)
+{
+	Node *a = *node;
+	centre_show(a);
+	return 1;
+}
+
+int d_min(Node **node)
+{
+	rb_getmin(*node);
+	return 1;
+}
+
 void freetab(Node *proot)
 {
 	if (!proot)
@@ -320,7 +411,7 @@ int delTable(Node *a)
 	return 0;
 }
 
-int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show};
+int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show, d_min, d_rev_show, d_direct_show, d_centre_show};
 
 int dialog ( const char *msgs[], int argc)
 {
