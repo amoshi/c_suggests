@@ -125,7 +125,7 @@ rb_node *rb_double ( rb_node *root, int dir )
 
 rb_node *make_node ( int key, char *field, rb_node *parent )
 {
-	rb_node *rn = malloc ( sizeof *rn );
+	rb_node *rn = (rb_node*)malloc ( sizeof *rn );
   
 	if ( rn != NULL ) {
 		rn->key = key;
@@ -412,7 +412,7 @@ int d_add(rb_tree *tree)
 	printf("info: ");
 	fgets(field, MAX_LEN, stdin);
 	len = strlen(field);
-	char *buf = malloc ( len );
+	char *buf = (char*)malloc ( len );
 	strlcpy(buf, field, len);
 	buf[len] = 0;
 	rb_insert ( tree, key, buf );
@@ -459,7 +459,7 @@ void rb_generate(rb_tree *tree, int range, int count)
 	srand((unsigned int) seconds);
 	for ( i=0; i<count; i++ )
 	{
-		char *buf = malloc(2);
+		char *buf = (char*)malloc(2);
 		int rnd = rand() % range;
 		do
 		{
@@ -657,7 +657,7 @@ void file_input(rb_tree *tree, char *file)
 		size_t len = strlen(field);
 		field[len-1] = 0;
 		//printf("key %d, info: '%s'\n", key, field);
-		char *buf = malloc ( len );
+		char *buf = (char*)malloc ( len );
 		strlcpy(buf, field, len);
 		buf[len] = 0;
 		rb_insert ( tree, key, buf );
