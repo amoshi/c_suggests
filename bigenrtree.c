@@ -97,6 +97,7 @@ Node *instree (Node **proot, Node *newnode)
 
 	if((*proot)->key == newnode->key)
 	{
+		printf("key %d already in used\n", newnode->key);
 		return NULL;
 	}
 	ptr = (newnode->key < (*proot)->key) ?  &(*proot)->left : &(*proot)->right;
