@@ -15,7 +15,7 @@ typedef struct Node
 	struct Node *next;
 } Node;
 
-const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Min", "6. Reverse", "7. Direct", "8. Circle"  };
+const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Min", "6. Reverse", "7. Direct", "8. Circle", "9. Show tree" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 // рекурсивный поиск элемента
@@ -261,7 +261,7 @@ void rb_getmin(Node *x)
 			x = x->right;
 		else
 		{
-			printf("min: %d\n", x->key);
+			printf("min: %d, info: '%s'\n", x->key, x->info);
 			return;
 		}
 	}
@@ -303,6 +303,40 @@ int d_show(Node **node)
 	}
 	key = atoll(field);
 	show(a, key);
+	return 1;
+}
+
+int showtree ( Node *ptr, int n )
+{
+	n++;
+	if ( !ptr )
+		return 0;
+	if ( ptr->right )
+	{
+		n = showtree(ptr->right, n);
+	}
+	if ( ptr )
+	{
+		int i;
+		for ( i=0; i<n; i++, printf("\t") );
+		printf("key: %d, info: '%s'\n", ptr->key, ptr->info );
+	}
+	if ( ptr->left )
+	{
+		n = showtree(ptr->left, n);
+	}
+	n--;
+	return n;
+}
+int d_showtree(Node **node)
+{
+	Node *a = *node;
+	int i;
+	//if ( a->left )
+	//	showtree(a->left, 0);
+	//if ( a->right )
+	//	showtree(a->right, 0);
+	showtree(a,-1);
 	return 1;
 }
 
@@ -411,7 +445,7 @@ int delTable(Node *a)
 	return 0;
 }
 
-int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show, d_min, d_rev_show, d_direct_show, d_centre_show};
+int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show, d_min, d_rev_show, d_direct_show, d_centre_show, d_showtree};
 
 int dialog ( const char *msgs[], int argc)
 {
