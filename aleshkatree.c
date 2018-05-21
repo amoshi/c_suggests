@@ -195,7 +195,7 @@ int d_delete(Node **node)
 	return 1;
 }
 
-void rb_getmax(Node *x)
+void getmax(Node *x)
 {
 	while ( x )
 	{
@@ -289,7 +289,7 @@ int d_direct_show(Node **node)
 
 int d_max(Node **node)
 {
-	rb_getmax(*node);
+	getmax(*node);
 	return 1;
 }
 
