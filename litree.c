@@ -202,7 +202,7 @@ void show_getdistance(Node *x, Node **dist, int key)
 	show_getdistance(x->right, dist, key);
 }
 
-Node* rb_getdistance(Node *x, int key)
+Node* getdistance(Node *x, int key)
 {
 	Node *dist = x;
 	if ( key == x->key )
@@ -310,7 +310,7 @@ int d_distance(Node **node)
 	}
 	int key = atoi(field);
 
-	Node *dist = rb_getdistance(*node, key);
+	Node *dist = getdistance(*node, key);
 	printf("found: key: %d, info: '%s', distance=%d\n", dist->key, dist->info, abs(key-dist->key) );
 	return 1;
 }
