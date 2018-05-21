@@ -190,7 +190,7 @@ int d_delete(Node **node)
 	return 1;
 }
 
-void rb_getmin(Node *x)
+void getmin(Node *x)
 {
 	while ( x )
 	{
@@ -282,7 +282,7 @@ int d_rev_show(Node **node)
 
 int d_min(Node **node)
 {
-	rb_getmin(*node);
+	getmin(*node);
 	return 1;
 }
 
