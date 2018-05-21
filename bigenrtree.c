@@ -24,7 +24,7 @@ Node *search (Node *proot, int key)
 	{
 		return NULL;
 	}
-	printf("enter proot key %d\n", proot->key);
+	//printf("enter proot key %d\n", proot->key);
 
 	if(proot->key == key)
 		return proot;
