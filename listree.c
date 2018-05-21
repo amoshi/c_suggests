@@ -261,7 +261,13 @@ void rb_getmin(Node *x)
 			x = x->right;
 		else
 		{
-			printf("min: %d, info: '%s'\n", x->key, x->info);
+			//printf("min: %d, info: '%s'\n", x->key, x->info);
+			Node *cur = x;
+			while ( cur )
+			{
+				printf("min: { key: %d, info: '%s' release: %d}\n", cur->key, cur->info, cur->release);
+				cur = cur->next;
+			}
 			return;
 		}
 	}
@@ -317,9 +323,15 @@ int showtree ( Node *ptr, int n )
 	}
 	if ( ptr )
 	{
+		Node *cur = ptr;
 		int i;
 		for ( i=0; i<n; i++, printf("\t") );
-		printf("key: %d, info: '%s'\n", ptr->key, ptr->info );
+		while ( cur )
+		{
+			printf("key: %d, info: '%s' release: %d\t\t", cur->key, cur->info, cur->release);
+			cur = cur->next;
+		}
+		puts("");
 	}
 	if ( ptr->left )
 	{
