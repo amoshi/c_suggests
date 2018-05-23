@@ -15,7 +15,7 @@ typedef struct Node
 	struct Node *next;
 } Node;
 
-const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Min", "6. Reverse", "7. Direct", "8. Circle", "9. Show tree" };
+const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Min", "6. Reverse", "7. Direct", "8. Circle", "9. Show tree", "10. Load from file" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 // рекурсивный поиск элемента
@@ -457,7 +457,50 @@ int delTable(Node *a)
 	return 0;
 }
 
-int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show, d_min, d_rev_show, d_direct_show, d_centre_show, d_showtree};
+void file_input(Node **tree, char *file)
+{
+
+	FILE *fd = fopen(file, "r");
+	if ( !fd ) 
+	{
+		printf("trying open file '%s'\n", file);
+		perror("cannot open file: ");
+		return;
+	}
+
+	char field[MAX_LEN];
+	unsigned int i;
+	int key;
+	for ( i=0; fgets(field, MAX_LEN, fd); i++ )
+	{
+		int key = atoll(field);
+		fgets(field, MAX_LEN, fd);
+		size_t len = strlen(field);
+		field[len-1] = 0;
+		char *buf = (char*)malloc ( len );
+		strncpy(buf, field, len);
+		buf[len] = 0;
+		insert ( tree, key, buf );
+	}
+	printf("%u keys loaded from file %s\n", i, file);
+
+	fclose(fd);
+}
+int d_fload(Node **node)
+{
+	Node *a = *node;
+	char field[MAX_LEN];
+	printf("Filename: ");
+	fgets(field, MAX_LEN, stdin);
+	field[strlen(field)-1]='\0';
+	
+	file_input(node, field);
+	printf("\n------\n\n");
+	
+	return 1;
+}
+
+int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show, d_min, d_rev_show, d_direct_show, d_centre_show, d_showtree, d_fload};
 
 int dialog ( const char *msgs[], int argc)
 {
@@ -481,39 +524,10 @@ int dialog ( const char *msgs[], int argc)
 	return i;
 }
 
-void file_input(Node **tree, char *file)
-{
-
-	FILE *fd = fopen(file, "r");
-	if ( !fd ) 
-		return;
-
-	char field[MAX_LEN];
-	unsigned int i;
-	int key;
-	for ( i=0; fgets(field, MAX_LEN, fd); i++ )
-	{
-		int key = atoll(field);
-		fgets(field, MAX_LEN, fd);
-		size_t len = strlen(field);
-		field[len-1] = 0;
-		char *buf = (char*)malloc ( len );
-		strncpy(buf, field, len);
-		buf[len] = 0;
-		insert ( tree, key, buf );
-	}
-	printf("%u keys loaded from file %s\n", i, file);
-
-	fclose(fd);
-}
 
 int main(int argc, char **argv)
 {
 	Node *a = NULL;
-	//a.right=NULL;
-	//a.left=NULL;
-	if ( argc > 1 )
-		file_input(&a, argv[1]);
 	int rc;
 	while ( (rc = dialog(msgs, NMsgs)) )
 		if ( fptr[rc])
