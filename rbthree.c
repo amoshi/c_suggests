@@ -394,7 +394,7 @@ rb_node* rb_find ( rb_tree *tree, int key )
 	return NULL;
 }
 
-const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Generate", "6. Bypass", "7. Smartdelete" };
+const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Generate", "6. Bypass", "7. Smartdelete", "8. Load from file" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 int d_add(rb_tree *tree)
@@ -613,7 +613,6 @@ int d_smartdelete(rb_tree *tree)
 	return 1;
 }
 
-int (*fptr[])(rb_tree *) = {NULL, d_add, d_find, d_delete, d_build, d_gen, d_bypass, d_smartdelete, NULL};
 
 int dialog ( const char *msgs[], int argc)
 {
@@ -643,7 +642,11 @@ void file_input(rb_tree *tree, char *file)
 
 	FILE *fd = fopen(file, "r");
 	if ( !fd ) 
+	{
+		printf("trying open file '%s'\n", file);
+		perror("cannot open file: ");
 		return;
+	}
 
 	char field[MAX_LEN];
 	unsigned int i;
@@ -666,16 +669,24 @@ void file_input(rb_tree *tree, char *file)
 
 	fclose(fd);
 }
+int d_fload(rb_tree *tree)
+{
+	char field[MAX_LEN];
+	printf("Filename: ");
+	fgets(field, MAX_LEN, stdin);
+	field[strlen(field)-1]='\0';
+	
+	file_input(tree, field);
+	printf("\n------\n\n");
+	
+	return 1;
+}
+int (*fptr[])(rb_tree *) = {NULL, d_add, d_find, d_delete, d_build, d_gen, d_bypass, d_smartdelete, d_fload };
 
-int main(int argc, char **argv)
+int main()
 {
 	rb_tree *tree = calloc(1,sizeof(rb_tree));
 	int i;
-
-	if ( argc > 1 )
-	{
-		file_input(tree, argv[1]);
-	}
 
 	int rc;
 	while ( (rc = dialog(msgs, NMsgs)) )

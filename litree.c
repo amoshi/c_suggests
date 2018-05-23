@@ -391,7 +391,6 @@ void file_input(Node **tree, char *file)
 }
 int d_fload(Node **node)
 {
-	Node *a = *node;
 	char field[MAX_LEN];
 	printf("Filename: ");
 	fgets(field, MAX_LEN, stdin);
