@@ -189,13 +189,17 @@ int D_Find(Table *ptab)
         getInt(&x);
 	}
 	while(x==0);
-	for (n=0; ptab[n].key != 0; n++);
+	for (n=0, i=0; i < MAX_SIZE;i++)
+	{
+		if ( ptab[i].key != 0 )
+			n++;
+	}
 	last = n;
-    if (n == 0) 
+        if (n == 0) 
 	{
 		printf("Database is empty\n");
-        return 1;
-    } 
+                return 1;
+        } 
 	else if (ptab[0].key > x) 
 	{
 		printf("No matches\n");

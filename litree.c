@@ -13,7 +13,7 @@ typedef struct Node
 	struct Node *right; // правая ветка
 } Node;
 
-const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Get near", "6. Reverse", "7. Show tree", "8. Load table from file" };
+const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Get near", "6. Direct", "7. Show tree", "8. Load table from file" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 // рекурсивный поиск элемента
@@ -282,19 +282,19 @@ int d_showtree(Node **node)
 	return 1;
 }
 
-void rev_show ( Node *ptr )
+void direct_show ( Node *ptr )
 {
 	if ( !ptr )
 		return;
-	rev_show(ptr->left);
-	rev_show(ptr->right);
-
 	printf("key: %d, info: '%s'\n", ptr->key, ptr->info);
+	direct_show(ptr->left);
+	direct_show(ptr->right);
+
 }
-int d_rev_show(Node **node)
+int d_direct_show(Node **node)
 {
 	Node *a = *node;
-	rev_show(a);
+	direct_show(a);
 	return 1;
 }
 
@@ -401,7 +401,7 @@ int d_fload(Node **node)
 	
 	return 1;
 }
-int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show, d_distance, d_rev_show, d_showtree, d_fload};
+int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show, d_distance, d_direct_show, d_showtree, d_fload};
 
 int main()
 {
