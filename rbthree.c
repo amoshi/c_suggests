@@ -295,7 +295,7 @@ int rb_delete ( rb_tree *tree, int key )
 
 void tree_show(rb_node *x)
 {
-	char *color = x->color ? "red" : "black";
+	char *color = x->color ? (char*)"red" : (char*)"black";
 	printf("%u: '%s' (%s)\n",x->key, x->info, color);
 	if ( x->steam[LEFT] )
 		tree_show(x->steam[LEFT]);
@@ -330,7 +330,7 @@ unsigned int tree_build(rb_node *x, unsigned int l)
 {
 	l++;
 
-	char *color = x->color ? "red" : "black";
+	char *color = x->color ? (char*)"red" : (char*)"black";
 	if ( x->steam[RIGHT] )
 		l = tree_build(x->steam[RIGHT], l++);
 
@@ -413,7 +413,7 @@ int d_add(rb_tree *tree)
 	fgets(field, MAX_LEN, stdin);
 	len = strlen(field);
 	char *buf = (char*)malloc ( len );
-	strlcpy(buf, field, len);
+	strncpy(buf, field, len);
 	buf[len] = 0;
 	rb_insert ( tree, key, buf );
 	rb_build (tree);
@@ -510,7 +510,6 @@ int d_build(rb_tree *tree)
 int d_bypass(rb_tree *tree)
 {
 	rb_node *a = tree->root;
-	int i;
 	if ( !a )
 		return 1;
 	rb_node *ptr = a;
@@ -528,7 +527,6 @@ int d_bypass(rb_tree *tree)
 
 	while ( ptr )
 	{
-		printf("debug (%p) key = %d, info='%s'\n", ptr, ptr->key, ptr->info);
 		ptr = ptr->ptr;
 	}
 
@@ -537,7 +535,6 @@ int d_bypass(rb_tree *tree)
 
 int smartdelete(rb_tree *tree, int key)
 {
-	int i;
 	rb_node *a = tree->root;
 	rb_node *ptr = a;
 	rb_node *pp = NULL;
@@ -597,7 +594,6 @@ int smartdelete(rb_tree *tree, int key)
 int d_smartdelete(rb_tree *tree)
 {
 	rb_node *a = tree->root;
-	rb_node *res = NULL;
 	char field[MAX_LEN];
 	field[0]='a';
 	while ( !isdigit(*field) )
@@ -661,7 +657,7 @@ void file_input(rb_tree *tree, char *file)
 		field[len-1] = 0;
 		//printf("key %d, info: '%s'\n", key, field);
 		char *buf = (char*)malloc ( len );
-		strlcpy(buf, field, len);
+		strncpy(buf, field, len);
 		buf[len] = 0;
 		rb_insert ( tree, key, buf );
 	}
@@ -686,7 +682,6 @@ int (*fptr[])(rb_tree *) = {NULL, d_add, d_find, d_delete, d_build, d_gen, d_byp
 int main()
 {
 	rb_tree *tree = (shead*)calloc(1,sizeof(rb_tree));
-	int i;
 
 	int rc;
 	while ( (rc = dialog(msgs, NMsgs)) )
