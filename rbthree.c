@@ -414,7 +414,7 @@ int d_add(rb_tree *tree)
 	len = strlen(field);
 	char *buf = (char*)malloc ( len );
 	strncpy(buf, field, len);
-	buf[len] = 0;
+	buf[len-1] = 0;
 	rb_insert ( tree, key, buf );
 	rb_build (tree);
 	return 1;
@@ -593,7 +593,6 @@ int smartdelete(rb_tree *tree, int key)
 
 int d_smartdelete(rb_tree *tree)
 {
-	rb_node *a = tree->root;
 	char field[MAX_LEN];
 	field[0]='a';
 	while ( !isdigit(*field) )
@@ -646,7 +645,6 @@ void file_input(rb_tree *tree, char *file)
 
 	char field[MAX_LEN];
 	unsigned int i;
-	int key;
 	for ( i=0; fgets(field, MAX_LEN, fd); i++ )
 	{
 		//printf("-------\nfield = '%s'\n", field);
@@ -658,7 +656,7 @@ void file_input(rb_tree *tree, char *file)
 		//printf("key %d, info: '%s'\n", key, field);
 		char *buf = (char*)malloc ( len );
 		strncpy(buf, field, len);
-		buf[len] = 0;
+		buf[len-1] = 0;
 		rb_insert ( tree, key, buf );
 	}
 	printf("%u keys loaded from file %s\n", i, file);
@@ -681,7 +679,7 @@ int (*fptr[])(rb_tree *) = {NULL, d_add, d_find, d_delete, d_build, d_gen, d_byp
 
 int main()
 {
-	rb_tree *tree = (shead*)calloc(1,sizeof(rb_tree));
+	rb_tree *tree = (rb_tree*)calloc(1,sizeof(rb_tree));
 
 	int rc;
 	while ( (rc = dialog(msgs, NMsgs)) )
