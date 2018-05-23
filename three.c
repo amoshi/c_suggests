@@ -203,7 +203,7 @@ Node *insert(Node **proot, int k, char *in)
 	}
 	else
 	{
-		shead *stack = calloc(sizeof(shead),1);
+		shead *stack = (shead*)calloc(sizeof(shead),1);
 		post_order(proot[0], stack);
 		free(stack);
 	}
@@ -395,7 +395,7 @@ int smartdelete(Node *a, int key)
 
 	puts("===============");
 	puts("noramlize");
-	shead *stack = calloc(sizeof(shead),1);
+	shead *stack = (shead*)calloc(sizeof(shead),1);
 	post_order(a, stack);
 	free(stack);
 	return 1;

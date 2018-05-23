@@ -208,7 +208,7 @@ int rb_insert ( rb_tree *tree, int key, char *field )
 		tree->root = head.steam[RIGHT];
 	}
 	tree->root->color = BLACK;
-	shead *stack = calloc(sizeof(shead),1);
+	shead *stack = (shead*)calloc(sizeof(shead),1);
 	post_order(tree->root, stack);
 	tree->root->ptr = NULL;
 	free(stack);
@@ -286,7 +286,7 @@ int rb_delete ( rb_tree *tree, int key )
 			tree->root->color = BLACK;
 	}
  
-	shead *stack = calloc(sizeof(shead),1);
+	shead *stack = (shead*)calloc(sizeof(shead),1);
 	post_order(tree->root, stack);
 	tree->root->ptr = NULL;
 	free(stack);
@@ -587,7 +587,7 @@ int smartdelete(rb_tree *tree, int key)
 
 	puts("===============");
 	puts("noramlize");
-	shead *stack = calloc(sizeof(shead),1);
+	shead *stack = (shead*)calloc(sizeof(shead),1);
 	post_order(tree->root, stack);
 	tree->root->ptr = NULL;
 	free(stack);
@@ -685,7 +685,7 @@ int (*fptr[])(rb_tree *) = {NULL, d_add, d_find, d_delete, d_build, d_gen, d_byp
 
 int main()
 {
-	rb_tree *tree = calloc(1,sizeof(rb_tree));
+	rb_tree *tree = (shead*)calloc(1,sizeof(rb_tree));
 	int i;
 
 	int rc;
