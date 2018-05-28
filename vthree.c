@@ -69,7 +69,7 @@ Node* spop(shead *stack)
 	return ptr;
 }
 
-const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Bypass", "6. Generate", "7. Smartdelete" };
+const char *msgs[] = { "0. Quit", "1. Add", "2. Find", "3. Delete", "4. Show", "5. Bypass", "6. Generate", "7. Near min", "8. Load from file" };
 const int NMsgs = sizeof ( msgs ) / sizeof ( msgs[0] );
 
 // рекурсивный поиск элемента
@@ -345,60 +345,41 @@ int d_bypass(Node **node)
 	return 1;
 }
 
-int smartdelete(Node *a, int key)
+Node* getnearmin(Node *tree, int key)
 {
-	int i;
-	Node *ptr = a;
-	Node *pp = NULL;
-	Node *p = NULL;
-	while (ptr->left || ptr->right)
+	Node *ptr = tree;
+	Node *d = NULL;
+	while ( ptr )
 	{
-		//printf ("1 key %d\n", ptr->key);
-		if ( ptr->left )
-		{
-			ptr = ptr->left;
-		}
-		else if ( ptr->right )
-		{
-			ptr = ptr->right;
-		}
-	}
-
-	while ( ptr && ptr->key != key )
-	{
-		//printf ("2 key %d\n", ptr->key);
-		pp = p;
-		p = ptr;
+		//printf("%d-%d>0\n",ptr->key,key);
+		if ( !d && ptr->key != key && ptr->key > key )
+			d = ptr;
+		else if ( ptr->key != key && ptr->key - key > 0 && ptr->key < d->key )
+			d = ptr;
 		ptr = ptr->ptr;
 	}
+	return d;
+}
 
-	if ( p )
+int d_nearmin(Node **node)
+{
+	Node *a = *node;
+	Node *res = NULL;
+	char field[MAX_LEN];
+	field[0]='a';
+	while ( !isdigit(*field) )
 	{
-		printf("key = %d, info='%s'\n",p->key, p->info);
-		erase(a, p->key);
+		printf("key: ");
+		fgets(field, MAX_LEN, stdin);
 	}
-	if ( pp )
-	{
-		printf("key = %d, info='%s'\n",pp->key, pp->info);
-		erase(a, pp->key);
-	}
-
-	if (ptr->ptr && ptr->ptr->ptr )
-	{
-		printf("key = %d, info='%s'\n",ptr->ptr->ptr->key, ptr->ptr->ptr->info);
-		erase(a, ptr->ptr->ptr->key);
-	}
-	if ( ptr->ptr )
-	{
-		printf("key = %d, info='%s'\n",ptr->ptr->key, ptr->ptr->info);
-		erase(a, ptr->ptr->key);
-	}
-
-	puts("===============");
-	puts("noramlize");
-	shead *stack = (shead*)calloc(sizeof(shead),1);
-	post_order(a, stack);
-	free(stack);
+	int key = atoll(field);
+	
+	res = getnearmin(a, key);
+	printf("\n\nResults:\n-------------\n");
+	if ( res )
+		printf("min element key: %d, info: '%s'\n", res->key, res->info);
+	printf("\n------\n\n");
+	
 	return 1;
 }
 
@@ -447,25 +428,6 @@ int d_gen(Node **tree)
 	return 1;
 }
 
-int d_smartdelete(Node **node)
-{
-	Node *a = *node;
-	Node *res = NULL;
-	char field[MAX_LEN];
-	field[0]='a';
-	while ( !isdigit(*field) )
-	{
-		printf("key: ");
-		fgets(field, MAX_LEN, stdin);
-	}
-	int key = atoll(field);
-	
-	smartdelete(a, key);
-	printf("\n------\n\n");
-	
-	return 1;
-}
-
 void freetab(Node *proot)
 {
 	Node *ptr = proot;
@@ -491,8 +453,6 @@ int delTable(Node *a)
 		freetab(a);
 	return 0;
 }
-
-int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show, d_bypass, d_gen, d_smartdelete};
 
 int dialog ( const char *msgs[], int argc)
 {
@@ -521,7 +481,11 @@ void file_input(Node **tree, char *file)
 
 	FILE *fd = fopen(file, "r");
 	if ( !fd ) 
+	{
+		printf("trying open file '%s'\n", file);
+		perror("cannot open file: ");
 		return;
+	}
 
 	char field[MAX_LEN];
 	unsigned int i;
@@ -541,12 +505,24 @@ void file_input(Node **tree, char *file)
 
 	fclose(fd);
 }
+int d_fload(Node **node)
+{
+	char field[MAX_LEN];
+	printf("Filename: ");
+	fgets(field, MAX_LEN, stdin);
+	field[strlen(field)-1]='\0';
+	
+	file_input(node, field);
+	printf("\n------\n\n");
+	
+	return 1;
+}
 
-int main(int argc, char **argv)
+int (*fptr[])(Node **) = {NULL, d_add, d_find, d_delete, d_show, d_bypass, d_gen, d_nearmin, d_fload};
+
+int main()
 {
 	Node *a = NULL;
-	if ( argc > 1 )
-		file_input(&a, argv[1]);
 	int rc;
 	while ( (rc = dialog(msgs, NMsgs)) )
 		if ( fptr[rc])
